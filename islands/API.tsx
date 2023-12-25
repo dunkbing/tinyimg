@@ -1,0 +1,64 @@
+import Code from "@/islands/Code.tsx";
+
+export default function API(props: { baseUrl: string }) {
+  const sampleResponse = [{
+    url: "https://example.com/audio.mp3",
+    text: "Hello, world!",
+  }];
+
+  return (
+    <div class="flex flex-col items-center justify-center px-5 bg-white rounded shadow-lg p-8">
+      <div>
+        <h1 class="text-2xl font-semibold mb-4">Text2Audio API Instructions</h1>
+
+        <p class="mb-4">
+          Welcome to the Text2Audio API! Follow the instructions below to
+          convert text to audio using our API.
+        </p>
+
+        <h2 class="text-xl font-semibold mb-2">1. Make a Request</h2>
+        <p class="mb-2">
+          Use the following <b>curl</b>{" "}
+          command to make a sample request to convert text to audio:
+        </p>
+
+        <Code
+          code={`curl -X POST -H "Content-Type: application/json" -d '{"language": "en-US", "paragraphs": "test paragraph", "splitParagraph": true}' ${props.baseUrl}/api/audio`}
+        />
+
+        <p class="mb-2">
+          You can also use the <b>fetch</b>{"  "}API with Javascript
+        </p>
+
+        <Code
+          code={`fetch('${props.baseUrl}/api/audio', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              language: 'en-US',
+              paragraphs: 'test paragraph',
+              splitParagraph: true
+            })
+          })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error(error));
+          `}
+        />
+
+        <h2 className="text-xl font-semibold mb-2">2. Response</h2>
+        <p className="mb-2">
+          A successful response will be an array of objects like this:
+        </p>
+
+        <Code code={JSON.stringify(sampleResponse, null, 2)} />
+
+        <p className="mt-4">
+          Each object in the array contains a URL and the corresponding text.
+        </p>
+      </div>
+    </div>
+  );
+}
