@@ -1,9 +1,7 @@
 package stat
 
 import (
-	"encoding/json"
 	"log/slog"
-	"optipic/converter/localstore"
 )
 
 const filename = "stats.json"
@@ -15,30 +13,21 @@ type Stat struct {
 	TimeCount  int64 `json:"timeCount"`
 
 	Logger  *slog.Logger
-
-	localStore *localstore.LocalStore
 }
 
 // NewStat returns a new Stat instance.
 func NewStat() *Stat {
+	logger := slog.With("Stat")
+	logger.Info("Stat initialized...")
 	s := &Stat{
-		localStore: localstore.NewLocalStore(),
+		Logger: logger,
 	}
 
-	d, _ := s.localStore.Load(filename)
-	_ = json.Unmarshal(d, &s)
 	return s
 }
 
-// WailsInit performs setup when Wails is ready.
-func (s *Stat) WailsInit() error {
-	s.Logger = slog.With("Stat")
-	s.Logger.Info("Stat initialized...")
-	return nil
-}
-
 // GetStats returns the application stats.
-func (s *Stat) GetStats() map[string]interface{} {
+func (s *Stat) GetStats() map[string]any {
 	return map[string]interface{}{
 		"byteCount":  s.ByteCount,
 		"imageCount": s.ImageCount,
@@ -81,12 +70,6 @@ func (s *Stat) SetTimeCount(t int64) {
 
 // store stores the app stats to the file system.
 func (s *Stat) store() error {
-	js, err := json.Marshal(s.GetStats())
-	if err != nil {
-		return err
-	}
-	if err = s.localStore.Store(js, filename); err != nil {
-		return err
-	}
+	s.GetStats()
 	return nil
 }

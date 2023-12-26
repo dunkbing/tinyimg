@@ -21,19 +21,14 @@ type FileManager struct {
 }
 
 // NewFileManager creates a new FileManager.
-func NewFileManager(c *config.Config, s *stat.Stat) *FileManager {
-	slog.Default()
+func NewFileManager() *FileManager {
+	logger := slog.Default()
+	logger.Info("FileManager initialized...")
 	return &FileManager{
-		config: c,
-		stats:  s,
+		config: config.NewConfig(),
+		stats:  stat.NewStat(),
+		Logger: logger,
 	}
-}
-
-// WailsInit performs setup when Wails is ready.
-func (fm *FileManager) WailsInit() error {
-	fm.Logger = slog.Default()
-	fm.Logger.Info("FileManager initialized...")
-	return nil
 }
 
 // HandleFile processes a file from the client.

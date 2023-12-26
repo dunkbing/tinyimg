@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"optipic/converter/image"
 	"path/filepath"
+	"strings"
 )
 
 type RequestBody struct {
@@ -46,7 +47,27 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
         Size:     header.Size,
     }
 
-    fmt.Fprintf(w, "File uploaded successfully: %+v", f)
+    if !isImage(f.MimeType) {
+        http.Error(w, "Invalid file format. Only images are allowed.", http.StatusBadRequest)
+        return
+    }
+
+    fileManager := image.NewFileManager()
+    fileManager.HandleFile(&f)
+    errs := fileManager.Convert()
+    if len(errs) > 0 {
+        http.Error(w, "Failed to convert file", http.StatusInternalServerError)
+        return
+    }
+
+    // Success
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprint(w, "Success")
+}
+
+func isImage(mimeType string) bool {
+    mimeType = strings.ToLower(mimeType)
+    return strings.HasPrefix(mimeType, "image/")
 }
 
 func main() {

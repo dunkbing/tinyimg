@@ -1,10 +1,8 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"optipic/converter/jpeg"
-	"optipic/converter/localstore"
 	"optipic/converter/png"
 	"optipic/converter/webp"
 	"os"
@@ -30,26 +28,13 @@ type App struct {
 // Config represents the application settings.
 type Config struct {
 	App        *App
-	localStore *localstore.LocalStore
-}
-
-// WailsInit performs setup when Wails is ready.
-func (c *Config) WailsInit() error {
-	return nil
 }
 
 // NewConfig returns a new instance of Config.
 func NewConfig() *Config {
 	c := &Config{}
-	c.localStore = localstore.NewLocalStore()
+	c.App, _ = defaults()
 
-	a, err := c.localStore.Load(filename)
-	if err != nil {
-		c.App, _ = defaults()
-	}
-	if err = json.Unmarshal(a, &c.App); err != nil {
-		fmt.Printf("error")
-	}
 	return c
 }
 
@@ -75,22 +60,6 @@ func (c *Config) RestoreDefaults() (err error) {
 		return err
 	}
 	c.App = a
-	if err = c.store(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SetConfig sets and stores the given configuration.
-func (c *Config) SetConfig(cfg string) error {
-	a := &App{}
-	if err := json.Unmarshal([]byte(cfg), &a); err != nil {
-		return err
-	}
-	c.App = a
-	if err := c.store(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -120,18 +89,6 @@ func defaults() (*App, error) {
 	}
 	a.OutDir = cp
 	return a, nil
-}
-
-// store stores the configuration state to the file system.
-func (c *Config) store() error {
-	js, err := json.Marshal(c.GetAppConfig())
-	if err != nil {
-		return err
-	}
-	if err = c.localStore.Store(js, filename); err != nil {
-		return err
-	}
-	return nil
 }
 
 // rect represents an image width and height size.

@@ -133,6 +133,7 @@ func (f *File) Write(c *config.Config) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(dest)
 	if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
 		return err
 	}
