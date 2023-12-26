@@ -25,5 +25,8 @@
   },
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "go.toolsEnvVars": {
+    "CGO_ENABLED": "1"
   }
 }
