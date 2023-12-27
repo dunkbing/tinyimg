@@ -27,7 +27,7 @@ type App struct {
 
 // Config represents the application settings.
 type Config struct {
-	App        *App
+	App *App
 }
 
 // NewConfig returns a new instance of Config.

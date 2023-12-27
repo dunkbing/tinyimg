@@ -10,14 +10,14 @@ type Stat struct {
 	ImageCount int   `json:"imageCount"`
 	TimeCount  int64 `json:"timeCount"`
 
-	Logger  *slog.Logger
+	Logger *slog.Logger
 }
 
 var stat *Stat
 
 // NewStat returns a new Stat instance.
 func NewStat() *Stat {
-	logger := slog.With("Stat")
+	logger := slog.Default()
 	logger.Info("Stat initialized...")
 	if stat == nil {
 		stat = &Stat{
