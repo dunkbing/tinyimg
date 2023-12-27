@@ -8,5 +8,9 @@
 
 # Fresh build directory
 **/_fresh
-**/audios
 fly.toml
+.vscode
+components
+islands
+routes
+static

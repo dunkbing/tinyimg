@@ -1,8 +1,9 @@
-FROM denoland/deno:alpine
-EXPOSE 8000
+FROM golang:1.21-alpine
 WORKDIR /app
-ADD . /app
-
-# Add dependencies to the container's Deno cache
-RUN deno cache main.ts
-CMD ["task", "preview"]
+COPY go.mod go.sum ./
+RUN apk add --no-cache gcc musl-dev
+RUN go mod download
+COPY . ./
+RUN CGO_ENABLED=1 GOOS=linux go build -o optipic
+EXPOSE 8080
+ENTRYPOINT ["./optipic"]
