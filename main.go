@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
 	"net/http"
 	"optipic/converter/image"
@@ -54,7 +54,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
     fileManager := image.NewFileManager()
     fileManager.HandleFile(&f)
-    errs := fileManager.Convert()
+    stat, errs := fileManager.Convert()
     if len(errs) > 0 {
         http.Error(w, "Failed to convert file", http.StatusInternalServerError)
         return
@@ -62,7 +62,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
     // Success
     w.WriteHeader(http.StatusOK)
-    fmt.Fprint(w, "Success")
+    json.NewEncoder(w).Encode(stat)
 }
 
 func isImage(mimeType string) bool {

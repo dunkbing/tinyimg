@@ -4,8 +4,6 @@ import (
 	"log/slog"
 )
 
-const filename = "stats.json"
-
 // Stat represents application statistics.
 type Stat struct {
 	ByteCount  int64 `json:"byteCount"`
@@ -15,15 +13,18 @@ type Stat struct {
 	Logger  *slog.Logger
 }
 
+var stat *Stat
+
 // NewStat returns a new Stat instance.
 func NewStat() *Stat {
 	logger := slog.With("Stat")
 	logger.Info("Stat initialized...")
-	s := &Stat{
-		Logger: logger,
+	if stat == nil {
+		stat = &Stat{
+			Logger: logger,
+		}
 	}
-
-	return s
+	return stat
 }
 
 // GetStats returns the application stats.
@@ -35,8 +36,8 @@ func (s *Stat) GetStats() map[string]any {
 	}
 }
 
-// SetByteCount adds and persists the given byte count to the app stats.
-func (s *Stat) SetByteCount(b int64) {
+// IncreaseByteCount adds and persists the given byte count to the app stats.
+func (s *Stat) IncreaseByteCount(b int64) {
 	if b <= 0 {
 		return
 	}
@@ -46,8 +47,8 @@ func (s *Stat) SetByteCount(b int64) {
 	}
 }
 
-// SetImageCount adds and persists the given image count to the app stats.
-func (s *Stat) SetImageCount(i int) {
+// IncreaseImageCount adds and persists the given image count to the app stats.
+func (s *Stat) IncreaseImageCount(i int) {
 	if i <= 0 {
 		return
 	}
@@ -57,8 +58,8 @@ func (s *Stat) SetImageCount(i int) {
 	}
 }
 
-// SetTimeCount adds and persists the given time count to the app stats.
-func (s *Stat) SetTimeCount(t int64) {
+// IncreaseTimeCount adds and persists the given time count to the app stats.
+func (s *Stat) IncreaseTimeCount(t int64) {
 	if t < 0 {
 		return
 	}

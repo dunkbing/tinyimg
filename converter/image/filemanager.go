@@ -49,7 +49,7 @@ func (fm *FileManager) Clear() {
 }
 
 // Convert runs the conversion on all files in the FileManager.
-func (fm *FileManager) Convert() (errs []error) {
+func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
 	var wg sync.WaitGroup
 	wg.Add(fm.countUnconverted())
 
@@ -94,27 +94,17 @@ func (fm *FileManager) Convert() (errs []error) {
 
 	wg.Wait()
 	nt := (time.Now().UnixNano() - t) / 1000000
-	fm.stats.SetImageCount(c)
-	fm.stats.SetByteCount(b)
-	fm.stats.SetTimeCount(nt)
-	// fm.Runtime.Events.Emit("conversion:stat", map[string]interface{}{
-	// 	"count":   c,
-	// 	"resizes": c * len(fm.config.App.Sizes),
-	// 	"savings": b,
-	// 	"time":    nt,
-	// })
+	fm.stats.IncreaseImageCount(c)
+	fm.stats.IncreaseByteCount(b)
+	fm.stats.IncreaseTimeCount(nt)
 	fm.Clear()
-	return errs
-}
 
-// OpenFile opens the file at the given filepath using the file's native file
-// application.
-func (fm *FileManager) OpenFile(p string) error {
-	// if err := fm.Runtime.Browser.OpenFile(p); err != nil {
-	// 	fm.Logger.Errorf("failed to open file %s: %v", p, err)
-	// 	return err
-	// }
-	return nil
+	return map[string]any{
+		"count":   c,
+		"resizes": c * len(fm.config.App.Sizes),
+		"savings": b,
+		"time":    nt,
+	}, errs
 }
 
 // countUnconverted returns the number of files in the FileManager that haven't
