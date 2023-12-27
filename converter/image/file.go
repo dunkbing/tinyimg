@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/jpeg"
 	"optipic/converter/png"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/muesli/smartcrop"
@@ -32,6 +34,8 @@ var mimes = map[string]string{
 	"image/webp": "webp",
 }
 
+var logger *slog.Logger = slog.Default()
+
 // File represents an image file.
 type File struct {
 	Data          []byte `json:"data"`
@@ -42,6 +46,8 @@ type File struct {
 	Size          int64  `json:"size"`
 	ConvertedFile string
 	IsConverted   bool
+	ConvertTime   int64
+	S3Url         string
 	Image         image.Image
 }
 
@@ -90,13 +96,11 @@ func (f *File) GetSavings() (int64, error) {
 // Write saves a file to disk based on the encoding target.
 func (f *File) Write(c *config.Config) error {
 	// TODO resizing should probably be in its own method
+	t := time.Now().UnixNano()
 	if c.App.Sizes != nil {
 		for _, r := range c.App.Sizes {
 			if r.Height <= 0 || r.Width <= 0 {
-				// f.Runtime.Events.Emit("notify", map[string]interface{}{
-				// 	"msg":  fmt.Sprintf("Invalid image size: %s", r.String()),
-				// 	"type": "warn",
-				// })
+				logger.Warn("invalid image size", "size", r.String())
 				continue
 			}
 			var i image.Image
@@ -118,8 +122,8 @@ func (f *File) Write(c *config.Config) error {
 				i = imaging.Resize(croppedImg, r.Width, r.Height, imaging.Lanczos)
 				s = fmt.Sprintf("%dx%d", i.Bounds().Max.X, i.Bounds().Max.Y)
 			}
-			buf, err := encToBuf(i, c.App)
-			dest := path.Join(c.App.OutDir, c.App.Prefix+f.Name+"--"+s+c.App.Suffix+"."+c.App.Target)
+			buf, err := encToBuf(i, f.Ext)
+			dest := path.Join(c.App.OutDir, c.App.Prefix+f.Name+"--"+s+c.App.Suffix+"."+f.Ext)
 			if err != nil {
 				return err
 			}
@@ -128,31 +132,42 @@ func (f *File) Write(c *config.Config) error {
 			}
 		}
 	}
-	buf, err := encToBuf(f.Image, c.App)
+	buf, err := encToBuf(f.Image, c.App.Target)
 	dest := path.Join(c.App.OutDir, c.App.Prefix+f.Name+c.App.Suffix+"."+c.App.Target)
 	if err != nil {
 		return err
 	}
-	fmt.Println(dest)
+	logger.Info("writing file", "path", dest)
 	if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
 		return err
 	}
+	nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
+	f.ConvertTime = nt
+	s3Client, err := NewS3Client()
+	if err != nil {
+		logger.Error("failed to create s3 client", "error", err)
+	}
+	err = s3Client.UploadFile(f.Name, dest)
+	if err != nil {
+		logger.Error("failed to upload file to s3", "error", err)
+	}
 	f.ConvertedFile = filepath.Clean(dest)
 	f.IsConverted = true
+	f.S3Url = s3Client.GetFileUrl(f.Name)
 	return nil
 }
 
 // encToBuf encodes an image to a buffer using the configured target.
-func encToBuf(i image.Image, a *config.App) (*bytes.Buffer, error) {
+func encToBuf(i image.Image, target string) (*bytes.Buffer, error) {
 	var b bytes.Buffer
 	var err error
-	switch a.Target {
+	switch target {
 	case "jpg":
-		b, err = jpeg.EncodeJPEG(i, a.JpegOpt)
+		b, err = jpeg.EncodeJPEG(i, &jpeg.Options{Quality: 80})
 	case "png":
-		b, err = png.EncodePNG(i, a.PngOpt)
+		b, err = png.EncodePNG(i, &png.Options{Quality: 80})
 	case "webp":
-		b, err = webp.EncodeWebp(i, a.WebpOpt)
+		b, err = webp.EncodeWebp(i, &webp.Options{Lossless: false, Quality: 80})
 	}
 	if err != nil {
 		return nil, err
