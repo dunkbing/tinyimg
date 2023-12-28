@@ -6,52 +6,7 @@ import { useToaster } from "fresh_toaster/hooks/index.tsx";
 import { Button } from "@/components/Button.tsx";
 import { Loader } from "@/components/Loader.tsx";
 import { downloadFile } from "@/utils/http.ts";
-
-type Audio = { url: string; text: string; index: number };
-
-const AudioCard = (props: Audio) => {
-  const audio = useMemo(() => new Audio(props.url), [props.url]);
-  const [playing, setPlaying] = useState(false);
-
-  audio.onpause = () => setPlaying(false);
-
-  return (
-    <div class="w-2/3 mx-auto bg-white rounded-lg overflow-hidden shadow-lg mb-2">
-      <div class="p-4">
-        <p class="text-gray-700 text-center">
-          {props.index}. {props.text}
-        </p>
-      </div>
-      <div class="px-4 pb-4 flex justify-center">
-        <Button
-          class="text-white font-semibold"
-          onClick={() => {
-            if (playing) {
-              setPlaying(false);
-              audio.pause();
-            } else {
-              setPlaying(true);
-              audio.play();
-            }
-          }}
-        >
-          {playing ? "Pause" : "Play"}
-        </Button>
-        <div class="w-5" />
-        <Button
-          class="text-white font-semibold"
-          colorMode="secondary"
-          onClick={() => downloadFile(props.url, String(props.index))}
-        >
-          Download
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-const audios = signal<Audio[]>([]);
-const converting = signal(false);
+import FileItem from "@/islands/FileItem.tsx";
 
 export default function Form() {
   const [toasts, toaster] = useToaster();
@@ -88,7 +43,7 @@ export default function Form() {
   };
 
   return (
-    <>
+    <div class="w-full">
       <div className="flex items-center justify-center w-full">
         <label
           htmlFor="dropzone-file"
@@ -120,36 +75,13 @@ export default function Form() {
             type="file"
             className="hidden"
             onChange={handleFileChange}
+            multiple
           />
         </label>
-
-        {/* Display the selected file name */}
-        {files && <p>{[...files].map((f) => f.name)}</p>}
       </div>
-
-      {converting.value ? <Loader /> : (
-        <>
-          {audios.value.length > 1
-            ? (
-              <Button
-                class="text-white font-semibold mb-2"
-                colorMode="secondary"
-                onClick={() =>
-                  audios.value.map((v, i) =>
-                    downloadFile(v.url, String(i + 1)).catch((err) =>
-                      toaster.error(err)
-                    )
-                  )}
-              >
-                Download All
-              </Button>
-            )
-            : null}
-          {audios.value.map((v, i) => (
-            <AudioCard key={i} text={v.text} url={v.url} index={i + 1} />
-          ))}
-        </>
+      {files && (
+        [...files].map((file: File) => <FileItem file={file} />)
       )}
-    </>
+    </div>
   );
 }

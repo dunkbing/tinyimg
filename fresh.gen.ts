@@ -17,6 +17,7 @@ import * as $API from "./islands/API.tsx";
 import * as $Code from "./islands/Code.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $FeedbackForm from "./islands/FeedbackForm.tsx";
+import * as $FileItem from "./islands/FileItem.tsx";
 import * as $Form from "./islands/Form.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -39,6 +40,7 @@ const manifest = {
     "./islands/Code.tsx": $Code,
     "./islands/Counter.tsx": $Counter,
     "./islands/FeedbackForm.tsx": $FeedbackForm,
+    "./islands/FileItem.tsx": $FileItem,
     "./islands/Form.tsx": $Form,
   },
   baseUrl: import.meta.url,

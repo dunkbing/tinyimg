@@ -46,7 +46,7 @@ export function truncateString(inputString: string, maxLength = 20) {
   if (inputString.length <= maxLength) {
     return inputString;
   } else {
-    return inputString.substring(0, maxLength);
+    return `${inputString.substring(0, maxLength)}...`;
   }
 }
 
