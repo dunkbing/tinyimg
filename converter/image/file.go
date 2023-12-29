@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -40,7 +41,6 @@ var logger *slog.Logger = slog.Default()
 type File struct {
 	Data          []byte `json:"data"`
 	Ext           string `json:"ext"`
-	ID            string `json:"id"`
 	MimeType      string `json:"type"`
 	Name          string `json:"name"`
 	Size          int64  `json:"size"`
@@ -133,7 +133,9 @@ func (f *File) Write(c *config.Config) error {
 		}
 	}
 	buf, err := encToBuf(f.Image, c.App.Target)
-	dest := path.Join(c.App.OutDir, c.App.Prefix+f.Name+c.App.Suffix+"."+c.App.Target)
+
+	filename := strings.Split(f.Name, ".")[0]
+	dest := path.Join(c.App.OutDir, c.App.Prefix+filename+c.App.Suffix+"."+c.App.Target)
 	if err != nil {
 		return err
 	}

@@ -71,13 +71,13 @@ func defaults() (*App, error) {
 		PngOpt:  &png.Options{Quality: 80},
 		WebpOpt: &webp.Options{Lossless: false, Quality: 80},
 	}
-	ud, err := os.UserHomeDir()
+	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Printf("failed to get user directory: %v", err)
 		return nil, err
 	}
 
-	od := path.Join(ud, "optipic")
+	od := path.Join(wd, "output")
 	cp := filepath.Clean(od)
 
 	if _, err = os.Stat(od); os.IsNotExist(err) {

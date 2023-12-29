@@ -55,7 +55,7 @@ func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
 	if !file.IsConverted {
 		err := file.Write(fm.config)
 		if err != nil {
-			fm.Logger.Error("failed to convert file", "fileID", file.ID, "error", err)
+			fm.Logger.Error("failed to convert file", "error", err)
 			errs = append(errs, fmt.Errorf("failed to convert file: %s", file.Name))
 		} else {
 			fm.Logger.Info(fmt.Sprintf("converted file: %s", file.Name))
@@ -65,7 +65,6 @@ func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
 			}
 			fm.Logger.Info(
 				"converted file",
-				"fileID", file.ID,
 				"path", strings.Replace(file.ConvertedFile, "\\", "/", -1),
 				"size", s,
 			)

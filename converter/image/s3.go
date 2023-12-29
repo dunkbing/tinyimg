@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -17,6 +18,7 @@ type S3Client struct {
 }
 
 var bucketName = "optipic"
+
 var s3Endpoint = os.Getenv("S3_ENDPOINT")
 var accessKeyId = os.Getenv("S3_ACCESS_KEY")
 var accessKeySecret = os.Getenv("S3_SECRET_KEY")
@@ -54,15 +56,34 @@ func (c *S3Client) UploadFile(key, filePath string) error {
 	defer file.Close()
 
 	uploader := manager.NewUploader(c.svc)
+	chunks := strings.Split(key, "/")
+	filename := chunks[len(chunks)-1]
+	contentDisposition := fmt.Sprintf(`attachment; filename="%s"`, filename)
 	_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(key),
 		Body:   file,
+		ACL:    "public-read",
+		Metadata: map[string]string{
+			"Content-Disposition": contentDisposition,
+		},
 	})
 
 	return err
 }
 
 func (c *S3Client) GetFileUrl(key string) string {
-	return fmt.Sprintf("https://pub-d27efff07d154c1ab0eae197ec72daec.r2.dev/%s/%s", bucketName, key)
+	presignClient := s3.NewPresignClient(c.svc)
+
+	presignResult, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		panic("Couldn't get presigned URL for PutObject")
+	}
+
+	fmt.Printf("Presigned URL For object: %s\n", presignResult.URL)
+	return presignResult.URL
 }

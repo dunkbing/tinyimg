@@ -37,13 +37,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.FormValue("id")
-	filename := strings.TrimSuffix(filepath.Base(header.Filename), filepath.Ext(header.Filename))
+	filename := header.Filename
 	ext := filepath.Ext(header.Filename)
 	f := image.File{
 		Data:     data,
 		Ext:      ext,
-		ID:       id,
 		MimeType: header.Header.Get("Content-Type"),
 		Name:     filename,
 		Size:     header.Size,
