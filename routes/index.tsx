@@ -2,9 +2,9 @@ import { PageProps } from "$fresh/server.ts";
 
 import Form from "@/islands/Form.tsx";
 import Head from "@/components/Head.tsx";
-import { kv, voicesEntryKey } from "@/utils/kv.ts";
+import config from "@/utils/config.ts";
 
-const voicesEntry = await kv.get(voicesEntryKey);
+const uploadUrl = `${config.apiUrl}/upload`;
 
 export default function Home(ctx: PageProps) {
   return (
@@ -17,7 +17,7 @@ export default function Home(ctx: PageProps) {
           rel="preload"
         />
       </Head>
-      <Form />
+      <Form uploadUrl={uploadUrl} />
     </div>
   );
 }

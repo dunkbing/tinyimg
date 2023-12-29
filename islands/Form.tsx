@@ -1,14 +1,14 @@
-import { signal } from "@preact/signals";
 import { JSX } from "preact";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { useToaster } from "fresh_toaster/hooks/index.tsx";
 
-import { Button } from "@/components/Button.tsx";
-import { Loader } from "@/components/Loader.tsx";
-import { downloadFile } from "@/utils/http.ts";
 import FileItem from "@/islands/FileItem.tsx";
 
-export default function Form() {
+type FormProps = {
+  uploadUrl: string;
+};
+
+export default function Form(props: FormProps) {
   const [toasts, toaster] = useToaster();
   const [files, setFiles] = useState<FileList | null>(null);
 
@@ -80,7 +80,9 @@ export default function Form() {
         </label>
       </div>
       {files && (
-        [...files].map((file: File) => <FileItem file={file} />)
+        [...files].map((file: File) => (
+          <FileItem file={file} uploadUrl={props.uploadUrl} />
+        ))
       )}
     </div>
   );
