@@ -60,7 +60,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileManager := image.NewFileManager()
-	fileManager.HandleFile(&f)
+	err = fileManager.HandleFile(&f)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	results, files, errs := fileManager.Convert()
 	strErrs := make([]string, len(errs))
 	for i, err := range errs {

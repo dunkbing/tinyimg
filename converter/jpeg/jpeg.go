@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"log/slog"
 )
 
 // Options represent JPEG encoding options.
@@ -14,7 +15,8 @@ type Options struct {
 
 // DecodeJPEG decodes a JPEG file and return an image.
 func DecodeJPEG(r io.Reader) (image.Image, error) {
-	i, err := jpeg.Decode(r)
+	i, realFormat, err := image.Decode(r)
+	slog.Info("realFormat", "realFormat", realFormat)
 	if err != nil {
 		return nil, err
 	}

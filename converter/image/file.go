@@ -57,11 +57,13 @@ type File struct {
 // Decode decodes the file's data based on its mime type.
 func (f *File) Decode() error {
 	mime, err := getFileType(f.MimeType)
+	logger.Info("mime", "mime", mime)
 	if err != nil {
 		return err
 	}
 
 	switch mime {
+	case "jpeg":
 	case "jpg":
 		f.Image, err = jpeg.DecodeJPEG(bytes.NewReader(f.Data))
 	case "png":
@@ -152,13 +154,13 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 		formats = []string{c.App.Target}
 	}
 	compressedFiles := []string{}
-	var wg sync.WaitGroup
 	s3Client, err := NewS3Client()
 	if err != nil {
 		logger.Error("failed to create s3 client", "error", err)
 	}
+	var wg sync.WaitGroup
+	wg.Add(len(formats))
 	for _, format := range formats {
-		wg.Add(1)
 		go func(format string) {
 			defer wg.Done()
 			var savedBytes, newSize int64 // bytes

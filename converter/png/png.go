@@ -2,10 +2,12 @@ package png
 
 import (
 	"bytes"
-	"github.com/foobaz/lossypng/lossypng"
 	"image"
 	"image/png"
 	"io"
+	"log/slog"
+
+	"github.com/foobaz/lossypng/lossypng"
 )
 
 const qMax = 20
@@ -17,7 +19,8 @@ type Options struct {
 
 // DecodePNG decodes a PNG file and return an image.
 func DecodePNG(r io.Reader) (image.Image, error) {
-	i, err := png.Decode(r)
+	i, realFormat, err := image.Decode(r)
+	slog.Info("realFormat", "realFormat", realFormat)
 	if err != nil {
 		return nil, err
 	}
