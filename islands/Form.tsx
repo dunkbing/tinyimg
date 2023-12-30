@@ -3,6 +3,7 @@ import { useState } from "preact/hooks";
 import { useToaster } from "fresh_toaster/hooks/index.tsx";
 
 import FileItem from "@/islands/FileItem.tsx";
+import Converter, { Format } from "@/islands/Converter.tsx";
 
 type FormProps = {
   uploadUrl: string;
@@ -11,6 +12,7 @@ type FormProps = {
 export default function Form(props: FormProps) {
   const [toasts, toaster] = useToaster();
   const [files, setFiles] = useState<FileList | null>(null);
+  const [formats, setFormats] = useState<Format[]>([]);
 
   const handleFileChange: JSX.GenericEventHandler<HTMLInputElement> = (
     event,
@@ -67,7 +69,7 @@ export default function Form(props: FormProps) {
               or drag and drop
             </p>
             <p className="text-xs text-gray-500">
-              SVG, PNG, JPG, or GIF (MAX. 800x400px)
+              PNG, JPG, or WEBP
             </p>
           </div>
           <input
@@ -79,9 +81,10 @@ export default function Form(props: FormProps) {
           />
         </label>
       </div>
+      <Converter onFormatChange={(nf) => setFormats(nf)} />
       {files && (
         [...files].map((file: File) => (
-          <FileItem file={file} uploadUrl={props.uploadUrl} />
+          <FileItem file={file} uploadUrl={props.uploadUrl} formats={formats} />
         ))
       )}
     </div>

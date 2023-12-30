@@ -15,6 +15,7 @@ import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $API from "./islands/API.tsx";
 import * as $Code from "./islands/Code.tsx";
+import * as $Converter from "./islands/Converter.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $FeedbackForm from "./islands/FeedbackForm.tsx";
 import * as $FileItem from "./islands/FileItem.tsx";
@@ -38,6 +39,7 @@ const manifest = {
   islands: {
     "./islands/API.tsx": $API,
     "./islands/Code.tsx": $Code,
+    "./islands/Converter.tsx": $Converter,
     "./islands/Counter.tsx": $Counter,
     "./islands/FeedbackForm.tsx": $FeedbackForm,
     "./islands/FileItem.tsx": $FileItem,

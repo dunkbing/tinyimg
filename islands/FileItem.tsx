@@ -4,7 +4,11 @@ import IconFileDownload from "tabler_icons_tsx/file-download.tsx";
 import { truncateString } from "@/utils/strings.ts";
 import { Loader } from "@/components/Loader.tsx";
 
-type FileItemProps = { file: File; uploadUrl: string };
+type FileItemProps = {
+  file: File;
+  uploadUrl: string;
+  formats: string[];
+};
 
 type FileResponse = {
   newSize: number;
@@ -19,7 +23,7 @@ type FileItemState = {
   status: "gt" | "lt" | "eq";
 };
 
-const FileItem = ({ file, uploadUrl }: FileItemProps) => {
+const FileItem = ({ file, uploadUrl, formats }: FileItemProps) => {
   const imageType = file.type?.split("/")?.[1];
   const [state, setState] = useState<FileItemState | null>(null);
   const [compressing, setCompressing] = useState(false);
@@ -39,6 +43,7 @@ const FileItem = ({ file, uploadUrl }: FileItemProps) => {
       setCompressing(true);
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("formats", formats.join(","));
       try {
         const res = await fetch(uploadUrl, {
           method: "POST",
