@@ -48,6 +48,7 @@ func NewS3Client() (*S3Client, error) {
 }
 
 func (c *S3Client) UploadFile(key, filePath string) error {
+	logger.Info("Uploading file to S3", "key", key, "filePath", filePath)
 	// Open the file
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -72,7 +73,7 @@ func (c *S3Client) UploadFile(key, filePath string) error {
 	return err
 }
 
-func (c *S3Client) GetFileUrl(key string) string {
+func (c *S3Client) GetFileUrl(key string) (string, error) {
 	presignClient := s3.NewPresignClient(c.svc)
 
 	presignResult, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
@@ -81,9 +82,8 @@ func (c *S3Client) GetFileUrl(key string) string {
 	})
 
 	if err != nil {
-		panic("Couldn't get presigned URL for PutObject")
+		return "", err
 	}
 
-	fmt.Printf("Presigned URL For object: %s\n", presignResult.URL)
-	return presignResult.URL
+	return presignResult.URL, nil
 }

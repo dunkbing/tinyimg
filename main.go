@@ -15,7 +15,8 @@ type RequestBody struct {
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000, https://tinyimg.deno.dev")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -37,6 +38,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	formatStr := r.FormValue("formats")
+	formats := strings.Split(formatStr, ",")
+
 	filename := header.Filename
 	ext := filepath.Ext(header.Filename)
 	f := image.File{
@@ -45,6 +49,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		MimeType: header.Header.Get("Content-Type"),
 		Name:     filename,
 		Size:     header.Size,
+		Formats:  formats,
 	}
 
 	if !isImage(f.MimeType) {
@@ -54,16 +59,20 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	fileManager := image.NewFileManager()
 	fileManager.HandleFile(&f)
-	stat, errs := fileManager.Convert()
-	if len(errs) > 0 {
-		http.Error(w, "Failed to convert file", http.StatusInternalServerError)
-		return
+	results, zippedUrl, errs := fileManager.Convert()
+	strErrs := make([]string, len(errs))
+	for i, err := range errs {
+		strErrs[i] = err.Error()
 	}
 
 	// Success
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(stat)
+	json.NewEncoder(w).Encode(map[string]any{
+		"data":      results,
+		"zippedUrl": zippedUrl,
+		"errors":    strErrs,
+	})
 }
 
 func isImage(mimeType string) bool {

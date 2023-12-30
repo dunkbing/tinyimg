@@ -17,8 +17,6 @@ const filename = "conf.json"
 type App struct {
 	OutDir  string        `json:"outDir"`
 	Target  string        `json:"target"`
-	Prefix  string        `json:"prefix"`
-	Suffix  string        `json:"suffix"`
 	Sizes   []*size       `json:"sizes"`
 	JpegOpt *jpeg.Options `json:"jpegOpt"`
 	PngOpt  *png.Options  `json:"pngOpt"`
@@ -43,8 +41,6 @@ func (c *Config) GetAppConfig() map[string]interface{} {
 	return map[string]interface{}{
 		"outDir":  c.App.OutDir,
 		"target":  c.App.Target,
-		"prefix":  c.App.Prefix,
-		"suffix":  c.App.Suffix,
 		"sizes":   c.App.Sizes,
 		"jpegOpt": c.App.JpegOpt,
 		"pngOpt":  c.App.PngOpt,

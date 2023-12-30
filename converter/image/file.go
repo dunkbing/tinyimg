@@ -1,10 +1,14 @@
 package image
 
 import (
+	"archive/zip"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"image"
+	"io"
 	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/jpeg"
@@ -14,6 +18,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -45,10 +50,8 @@ type File struct {
 	Name          string `json:"name"`
 	Size          int64  `json:"size"`
 	ConvertedFile string
-	IsConverted   bool
-	ConvertTime   int64
-	S3Url         string
 	Image         image.Image
+	Formats       []string
 }
 
 // Decode decodes the file's data based on its mime type.
@@ -93,9 +96,18 @@ func (f *File) GetSavings() (int64, error) {
 	return f.Size - c, nil
 }
 
+type FileResult struct {
+	SavedBytes int64  `json:"savedBytes"`
+	NewSize    int64  `json:"newSize"`
+	Time       int64  `json:"time"`
+	ImageUrl   string `json:"imageUrl"`
+}
+
 // Write saves a file to disk based on the encoding target.
-func (f *File) Write(c *config.Config) error {
+func (f *File) Write(c *config.Config) ([]FileResult, string, []error) {
 	// TODO resizing should probably be in its own method
+	var res []FileResult
+	var errs []error
 	t := time.Now().UnixNano()
 	if c.App.Sizes != nil {
 		for _, r := range c.App.Sizes {
@@ -116,47 +128,88 @@ func (f *File) Write(c *config.Config) error {
 				analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
 				crop, err := analyzer.FindBestCrop(f.Image, r.Width, r.Height)
 				if err != nil {
-					return err
+					errs = append(errs, err)
+					continue
 				}
 				croppedImg := f.Image.(SubImager).SubImage(crop)
 				i = imaging.Resize(croppedImg, r.Width, r.Height, imaging.Lanczos)
 				s = fmt.Sprintf("%dx%d", i.Bounds().Max.X, i.Bounds().Max.Y)
 			}
 			buf, err := encToBuf(i, f.Ext)
-			dest := path.Join(c.App.OutDir, c.App.Prefix+f.Name+"--"+s+c.App.Suffix+"."+f.Ext)
+			dest := path.Join(c.App.OutDir, f.Name+"--"+s+"."+f.Ext)
 			if err != nil {
-				return err
+				errs = append(errs, err)
+				continue
 			}
 			if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
-				return err
+				errs = append(errs, err)
+				continue
 			}
 		}
 	}
-	buf, err := encToBuf(f.Image, c.App.Target)
-
-	filename := strings.Split(f.Name, ".")[0]
-	dest := path.Join(c.App.OutDir, c.App.Prefix+filename+c.App.Suffix+"."+c.App.Target)
-	if err != nil {
-		return err
+	formats := f.Formats
+	if len(formats) == 0 {
+		formats = []string{c.App.Target}
 	}
-	logger.Info("writing file", "path", dest)
-	if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
-		return err
-	}
-	nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
-	f.ConvertTime = nt
+	compressedFiles := []string{}
+	var wg sync.WaitGroup
 	s3Client, err := NewS3Client()
 	if err != nil {
 		logger.Error("failed to create s3 client", "error", err)
 	}
-	err = s3Client.UploadFile(f.Name, dest)
-	if err != nil {
-		logger.Error("failed to upload file to s3", "error", err)
+	for _, format := range formats {
+		wg.Add(1)
+		go func(format string) {
+			defer wg.Done()
+			var savedBytes, newSize int64 // bytes
+			buf, err := encToBuf(f.Image, format)
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			filename := strings.Split(f.Name, ".")[0]
+			filename = filename + "." + format
+			dest := path.Join(c.App.OutDir, filename)
+			compressedFiles = append(compressedFiles, dest)
+			if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
+				errs = append(errs, err)
+				return
+			}
+			nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
+
+			err = s3Client.UploadFile(filename, dest)
+			if err != nil {
+				logger.Error("failed to upload file to s3", "error", err)
+			}
+			f.ConvertedFile = filepath.Clean(dest)
+			savedBytes, err = f.GetSavings()
+			newSize, err = f.GetConvertedSize()
+			imageUrl, err := s3Client.GetFileUrl(filename)
+
+			res = append(res, FileResult{
+				SavedBytes: savedBytes,
+				NewSize:    newSize,
+				Time:       nt,
+				ImageUrl:   imageUrl,
+			})
+		}(format)
 	}
-	f.ConvertedFile = filepath.Clean(dest)
-	f.IsConverted = true
-	f.S3Url = s3Client.GetFileUrl(f.Name)
-	return nil
+	wg.Wait()
+	zippedFile, err := zipFiles(compressedFiles)
+	var zippedUrl string
+	if err != nil {
+		logger.Error("failed to zip files", "error", err)
+		errs = append(errs, err)
+	} else {
+		err = s3Client.UploadFile(filepath.Base(zippedFile), zippedFile)
+		if err != nil {
+			logger.Error("failed to upload file to s3", "error", err)
+		} else {
+			zippedUrl, err = s3Client.GetFileUrl(zippedFile)
+		}
+	}
+
+	return res, zippedUrl, errs
 }
 
 // encToBuf encodes an image to a buffer using the configured target.
@@ -184,6 +237,74 @@ func getFileType(t string) (string, error) {
 		_ = errors.New("unsupported file type:" + t)
 	}
 	return m, nil
+}
+
+func generateUniqueZipFilename(files []string) string {
+	// Concatenate all file names
+	var concatenatedNames string
+	for _, file := range files {
+		concatenatedNames += filepath.Base(file)
+	}
+
+	// Calculate MD5 hash
+	hash := md5.New()
+	hash.Write([]byte(concatenatedNames))
+	hashInBytes := hash.Sum(nil)
+
+	// Convert the hash to a hexadecimal string
+	hashString := hex.EncodeToString(hashInBytes)
+
+	// Use the hash as the zip filename with a ".zip" extension
+	return hashString + ".zip"
+}
+
+func zipFiles(files []string) (string, error) {
+	baseFiles := []string{}
+	for _, file := range files {
+		baseFiles = append(baseFiles, filepath.Base(file))
+	}
+	name := generateUniqueZipFilename(baseFiles)
+	zipFile, err := os.Create(name)
+	if err != nil {
+		return "", err
+	}
+	defer zipFile.Close()
+
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	for _, file := range files {
+		f, err := os.Open(file)
+		if err != nil {
+			continue
+		}
+		defer f.Close()
+
+		info, err := f.Stat()
+		if err != nil {
+			continue
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			continue
+		}
+
+		header.Name = filepath.Base(file)
+		header.Method = zip.Deflate
+
+		writer, err := zipWriter.CreateHeader(header)
+		if err != nil {
+			continue
+		}
+
+		_, err = io.Copy(writer, f)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return zipFile.Name(), nil
 }
 
 // SubImager handles creating a subimage from an image rect.

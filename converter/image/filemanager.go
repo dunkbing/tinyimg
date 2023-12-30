@@ -1,12 +1,10 @@
 package image
 
 import (
-	"fmt"
 	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/stat"
 	"runtime/debug"
-	"strings"
 )
 
 // FileManager handles collections of Files for conversion.
@@ -48,40 +46,16 @@ func (fm *FileManager) Clear() {
 }
 
 // Convert runs the conversion on all files in the FileManager.
-func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
-	var savedBytes, newSize int64 // bytes
+func (fm *FileManager) Convert() (fileResults []FileResult, zippedUrl string, errs []error) {
 	file := fm.File
-	if !file.IsConverted {
-		err := file.Write(fm.config)
-		if err != nil {
-			fm.Logger.Error("failed to convert file", "error", err)
-			errs = append(errs, fmt.Errorf("failed to convert file: %s", file.Name))
-		} else {
-			fm.Logger.Info(fmt.Sprintf("converted file: %s", file.Name))
-			newSize, err = file.GetConvertedSize()
-			if err != nil {
-				fm.Logger.Error("failed to read converted file size", "error", err)
-			}
-			fm.Logger.Info(
-				"converted file",
-				"path", strings.Replace(file.ConvertedFile, "\\", "/", -1),
-				"size", newSize,
-			)
-			savedBytes, err = file.GetSavings()
-			if err != nil {
-				fm.Logger.Error("failed to get file conversion savings", "error", err)
-			}
-		}
-	}
+	fileResults, zippedUrl, errs = file.Write(fm.config)
 
-	fm.stats.IncreaseByteCount(savedBytes)
-	fm.stats.IncreaseTimeCount(file.ConvertTime)
+	for _, f := range fileResults {
+		fm.stats.IncreaseByteCount(f.SavedBytes)
+		fm.stats.IncreaseTimeCount(f.Time)
+		fm.stats.IncreaseImageCount(1)
+	}
 	fm.Clear()
 
-	return map[string]any{
-		"savedBytes": savedBytes,
-		"newSize":    newSize,
-		"time":       file.ConvertTime,
-		"imageUrl":   file.S3Url,
-	}, errs
+	return fileResults, zippedUrl, errs
 }
