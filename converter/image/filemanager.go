@@ -49,8 +49,7 @@ func (fm *FileManager) Clear() {
 
 // Convert runs the conversion on all files in the FileManager.
 func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
-	c := 0
-	var b int64 // bytes
+	var savedBytes, newSize int64 // bytes
 	file := fm.File
 	if !file.IsConverted {
 		err := file.Write(fm.config)
@@ -59,32 +58,29 @@ func (fm *FileManager) Convert() (stat map[string]any, errs []error) {
 			errs = append(errs, fmt.Errorf("failed to convert file: %s", file.Name))
 		} else {
 			fm.Logger.Info(fmt.Sprintf("converted file: %s", file.Name))
-			s, err := file.GetConvertedSize()
+			newSize, err = file.GetConvertedSize()
 			if err != nil {
 				fm.Logger.Error("failed to read converted file size", "error", err)
 			}
 			fm.Logger.Info(
 				"converted file",
 				"path", strings.Replace(file.ConvertedFile, "\\", "/", -1),
-				"size", s,
+				"size", newSize,
 			)
-			c++
-			s, err = file.GetSavings()
+			savedBytes, err = file.GetSavings()
 			if err != nil {
 				fm.Logger.Error("failed to get file conversion savings", "error", err)
 			}
-			b += s
 		}
 	}
 
-	fm.stats.IncreaseImageCount(c)
-	fm.stats.IncreaseByteCount(b)
+	fm.stats.IncreaseByteCount(savedBytes)
 	fm.stats.IncreaseTimeCount(file.ConvertTime)
 	fm.Clear()
 
 	return map[string]any{
-		"count":      c,
-		"savedBytes": b,
+		"savedBytes": savedBytes,
+		"newSize":    newSize,
 		"time":       file.ConvertTime,
 		"imageUrl":   file.S3Url,
 	}, errs
