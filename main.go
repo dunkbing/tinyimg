@@ -11,12 +11,14 @@ import (
 )
 
 type RequestBody struct {
-	Keys []string `json:"keys"`
+	Files []string `json:"files"`
 }
+
+const allowedOrigin = "http://localhost:8000, https://tinyimg.deno.dev"
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8000, https://tinyimg.deno.dev")
+	w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -59,7 +61,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	fileManager := image.NewFileManager()
 	fileManager.HandleFile(&f)
-	results, zippedUrl, errs := fileManager.Convert()
+	results, files, errs := fileManager.Convert()
 	strErrs := make([]string, len(errs))
 	for i, err := range errs {
 		strErrs[i] = err.Error()
@@ -69,9 +71,40 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]any{
-		"data":      results,
-		"zippedUrl": zippedUrl,
-		"errors":    strErrs,
+		"data":   results,
+		"files":  files,
+		"errors": strErrs,
+	})
+}
+
+func downloadZipHandler(w http.ResponseWriter, r *http.Request) {
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var body RequestBody
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, "Error parsing request body", http.StatusBadRequest)
+		return
+	}
+
+	fm := image.NewFileManager()
+	zippedUrl, err := fm.ZipFiles(body.Files)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]any{
+		"url": zippedUrl,
 	})
 }
 
@@ -82,6 +115,7 @@ func isImage(mimeType string) bool {
 
 func main() {
 	http.HandleFunc("/upload", uploadHandler)
+	http.HandleFunc("/download-all", downloadZipHandler)
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

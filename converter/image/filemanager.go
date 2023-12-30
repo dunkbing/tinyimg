@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/stat"
+	"path/filepath"
 	"runtime/debug"
 )
 
@@ -46,9 +47,9 @@ func (fm *FileManager) Clear() {
 }
 
 // Convert runs the conversion on all files in the FileManager.
-func (fm *FileManager) Convert() (fileResults []FileResult, zippedUrl string, errs []error) {
+func (fm *FileManager) Convert() (fileResults []FileResult, files []string, errs []error) {
 	file := fm.File
-	fileResults, zippedUrl, errs = file.Write(fm.config)
+	fileResults, files, errs = file.Write(fm.config)
 
 	for _, f := range fileResults {
 		fm.stats.IncreaseByteCount(f.SavedBytes)
@@ -57,5 +58,24 @@ func (fm *FileManager) Convert() (fileResults []FileResult, zippedUrl string, er
 	}
 	fm.Clear()
 
-	return fileResults, zippedUrl, errs
+	return fileResults, files, errs
+}
+
+func (fm *FileManager) ZipFiles(files []string) (string, error) {
+	s3Client, err := NewS3Client()
+	if err != nil {
+		return "", err
+	}
+	zippedFile, err := zipFiles(files, fm.config)
+	var zippedUrl string
+	if err != nil {
+		return "", err
+	} else {
+		err = s3Client.UploadFile(filepath.Base(zippedFile), zippedFile)
+		if err != nil {
+			return "", err
+		}
+		zippedUrl, err = s3Client.GetFileUrl(zippedFile)
+		return zippedUrl, err
+	}
 }

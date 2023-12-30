@@ -104,7 +104,7 @@ type FileResult struct {
 }
 
 // Write saves a file to disk based on the encoding target.
-func (f *File) Write(c *config.Config) ([]FileResult, string, []error) {
+func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	// TODO resizing should probably be in its own method
 	var res []FileResult
 	var errs []error
@@ -170,7 +170,7 @@ func (f *File) Write(c *config.Config) ([]FileResult, string, []error) {
 			filename := strings.Split(f.Name, ".")[0]
 			filename = filename + "." + format
 			dest := path.Join(c.App.OutDir, filename)
-			compressedFiles = append(compressedFiles, dest)
+			compressedFiles = append(compressedFiles, filename)
 			if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
 				errs = append(errs, err)
 				return
@@ -182,9 +182,9 @@ func (f *File) Write(c *config.Config) ([]FileResult, string, []error) {
 				logger.Error("failed to upload file to s3", "error", err)
 			}
 			f.ConvertedFile = filepath.Clean(dest)
-			savedBytes, err = f.GetSavings()
-			newSize, err = f.GetConvertedSize()
-			imageUrl, err := s3Client.GetFileUrl(filename)
+			savedBytes, _ = f.GetSavings()
+			newSize, _ = f.GetConvertedSize()
+			imageUrl, _ := s3Client.GetFileUrl(filename)
 
 			res = append(res, FileResult{
 				SavedBytes: savedBytes,
@@ -195,21 +195,8 @@ func (f *File) Write(c *config.Config) ([]FileResult, string, []error) {
 		}(format)
 	}
 	wg.Wait()
-	zippedFile, err := zipFiles(compressedFiles)
-	var zippedUrl string
-	if err != nil {
-		logger.Error("failed to zip files", "error", err)
-		errs = append(errs, err)
-	} else {
-		err = s3Client.UploadFile(filepath.Base(zippedFile), zippedFile)
-		if err != nil {
-			logger.Error("failed to upload file to s3", "error", err)
-		} else {
-			zippedUrl, err = s3Client.GetFileUrl(zippedFile)
-		}
-	}
 
-	return res, zippedUrl, errs
+	return res, compressedFiles, errs
 }
 
 // encToBuf encodes an image to a buffer using the configured target.
@@ -258,7 +245,9 @@ func generateUniqueZipFilename(files []string) string {
 	return hashString + ".zip"
 }
 
-func zipFiles(files []string) (string, error) {
+func zipFiles(files []string, c *config.Config) (string, error) {
+	logger.Info("zipping files", "files", files)
+	t := time.Now().UnixNano()
 	baseFiles := []string{}
 	for _, file := range files {
 		baseFiles = append(baseFiles, filepath.Base(file))
@@ -274,7 +263,7 @@ func zipFiles(files []string) (string, error) {
 	defer zipWriter.Close()
 
 	for _, file := range files {
-		f, err := os.Open(file)
+		f, err := os.Open(path.Join(c.App.OutDir, file))
 		if err != nil {
 			continue
 		}
@@ -303,6 +292,9 @@ func zipFiles(files []string) (string, error) {
 			return "", err
 		}
 	}
+
+	nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
+	logger.Info("zipped files", "name", name, "time", nt)
 
 	return zipFile.Name(), nil
 }
