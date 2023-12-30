@@ -110,7 +110,7 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	// TODO resizing should probably be in its own method
 	var res []FileResult
 	var errs []error
-	t := time.Now().UnixNano()
+	t := time.Now()
 	if c.App.Sizes != nil {
 		for _, r := range c.App.Sizes {
 			if r.Height <= 0 || r.Width <= 0 {
@@ -177,7 +177,7 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 				errs = append(errs, err)
 				return
 			}
-			nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
+			nt := time.Since(t).Milliseconds()
 
 			err = s3Client.UploadFile(filename, dest)
 			if err != nil {
@@ -249,7 +249,7 @@ func generateUniqueZipFilename(files []string) string {
 
 func zipFiles(files []string, c *config.Config) (string, error) {
 	logger.Info("zipping files", "files", files)
-	t := time.Now().UnixNano()
+	t := time.Now()
 	baseFiles := []string{}
 	for _, file := range files {
 		baseFiles = append(baseFiles, filepath.Base(file))
@@ -295,7 +295,7 @@ func zipFiles(files []string, c *config.Config) (string, error) {
 		}
 	}
 
-	nt := (time.Now().UnixNano() - t) / 1000000 // milliseconds
+	nt := time.Since(t).Milliseconds()
 	logger.Info("zipped files", "name", name, "time", nt)
 
 	return zipFile.Name(), nil
