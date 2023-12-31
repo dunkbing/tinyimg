@@ -104,6 +104,7 @@ type FileResult struct {
 	NewSize    int64  `json:"newSize"`
 	Time       int64  `json:"time"`
 	ImageUrl   string `json:"imageUrl"`
+	Format     string `json:"format"`
 }
 
 // Write saves a file to disk based on the encoding target.
@@ -192,6 +193,7 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 				NewSize:    newSize,
 				Time:       nt,
 				ImageUrl:   imageUrl,
+				Format:     format,
 			}
 		}(format, i)
 	}

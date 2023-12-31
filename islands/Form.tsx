@@ -62,7 +62,6 @@ export default function Form(props: FormProps) {
               fill="none"
               viewBox="0 0 20 16"
             >
-              {/* SVG path data */}
             </svg>
             <p className="mb-2 text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span>{" "}

@@ -76,3 +76,13 @@ export function uniqFast(arr: Array<string>) {
 export function getFileName(url: string) {
   return url.split("/").pop();
 }
+
+export function formatPercentage(percentage: number) {
+  if (percentage === 0) {
+    return "0%";
+  }
+  if (percentage < 0) {
+    return `+${Math.abs(percentage).toFixed(2)}%`;
+  }
+  return `${percentage.toFixed(2)}%`;
+}
