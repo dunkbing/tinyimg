@@ -14,14 +14,20 @@ type RequestBody struct {
 	Files []string `json:"files"`
 }
 
-const allowedOrigin = "http://localhost:8000, https://tinyimg.deno.dev"
+var allowedOrigin = "*"
+
+func enableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		next.ServeHTTP(w, r)
+	})
+}
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -40,11 +46,18 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formatStr := r.FormValue("formats")
-	formats := strings.Split(formatStr, ",")
-
+	mimeType := header.Header.Get("Content-Type")
+	fileType, _ := image.GetFileType(mimeType)
 	filename := header.Filename
 	ext := filepath.Ext(header.Filename)
+	formatStr := r.FormValue("formats")
+	formats := make([]string, 0)
+	if formatStr != "" {
+		formats = strings.Split(formatStr, ",")
+	} else {
+		formats = append(formats, fileType)
+	}
+
 	f := image.File{
 		Data:     data,
 		Ext:      ext,
@@ -118,10 +131,13 @@ func isImage(mimeType string) bool {
 }
 
 func main() {
-	http.HandleFunc("/upload", uploadHandler)
-	http.HandleFunc("/download-all", downloadZipHandler)
+	mux := http.NewServeMux()
+	uploadHandlerWithCors := enableCors(http.HandlerFunc(uploadHandler))
+	downloadZipHandlerWithCors := enableCors(http.HandlerFunc(downloadZipHandler))
+	mux.Handle("/upload", uploadHandlerWithCors)
+	mux.Handle("/download-all", downloadZipHandlerWithCors)
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatal("Server failed to start:", err)
 	}

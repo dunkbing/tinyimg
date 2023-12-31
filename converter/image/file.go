@@ -56,20 +56,21 @@ type File struct {
 
 // Decode decodes the file's data based on its mime type.
 func (f *File) Decode() error {
-	mime, err := getFileType(f.MimeType)
+	mime, err := GetFileType(f.MimeType)
 	logger.Info("mime", "mime", mime)
 	if err != nil {
 		return err
 	}
 
 	switch mime {
-	case "jpeg":
-	case "jpg":
+	case "jpg", "jpeg":
 		f.Image, err = jpeg.DecodeJPEG(bytes.NewReader(f.Data))
 	case "png":
 		f.Image, err = png.DecodePNG(bytes.NewReader(f.Data))
 	case "webp":
 		f.Image, err = webp.DecodeWebp(bytes.NewReader(f.Data))
+	default:
+		err = errors.New("unsupported file type:" + mime)
 	}
 	if err != nil {
 		return err
@@ -108,7 +109,6 @@ type FileResult struct {
 // Write saves a file to disk based on the encoding target.
 func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	// TODO resizing should probably be in its own method
-	var res []FileResult
 	var errs []error
 	t := time.Now()
 	if c.App.Sizes != nil {
@@ -149,19 +149,18 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 			}
 		}
 	}
-	formats := f.Formats
-	if len(formats) == 0 {
-		formats = []string{c.App.Target}
-	}
 	compressedFiles := []string{}
 	s3Client, err := NewS3Client()
 	if err != nil {
 		logger.Error("failed to create s3 client", "error", err)
 	}
+	formats := f.Formats
+	res := make([]FileResult, len(formats))
 	var wg sync.WaitGroup
 	wg.Add(len(formats))
-	for _, format := range formats {
-		go func(format string) {
+	for i, format := range formats {
+		fmt.Println("format", format)
+		go func(format string, index int) {
 			defer wg.Done()
 			var savedBytes, newSize int64 // bytes
 			buf, err := encToBuf(f.Image, format)
@@ -188,13 +187,13 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 			newSize, _ = f.GetConvertedSize()
 			imageUrl, _ := s3Client.GetFileUrl(filename)
 
-			res = append(res, FileResult{
+			res[index] = FileResult{
 				SavedBytes: savedBytes,
 				NewSize:    newSize,
 				Time:       nt,
 				ImageUrl:   imageUrl,
-			})
-		}(format)
+			}
+		}(format, i)
 	}
 	wg.Wait()
 
@@ -206,7 +205,7 @@ func encToBuf(i image.Image, target string) (*bytes.Buffer, error) {
 	var b bytes.Buffer
 	var err error
 	switch target {
-	case "jpg":
+	case "jpg", "jpeg":
 		b, err = jpeg.EncodeJPEG(i, &jpeg.Options{Quality: 80})
 	case "png":
 		b, err = png.EncodePNG(i, &png.Options{Quality: 80})
@@ -219,8 +218,8 @@ func encToBuf(i image.Image, target string) (*bytes.Buffer, error) {
 	return &b, nil
 }
 
-// getFileType returns the file's type based on the given mime type.
-func getFileType(t string) (string, error) {
+// GetFileType returns the file's type based on the given mime type.
+func GetFileType(t string) (string, error) {
 	m, prs := mimes[t]
 	if !prs {
 		_ = errors.New("unsupported file type:" + t)
