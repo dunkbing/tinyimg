@@ -30,6 +30,9 @@
     "CGO_ENABLED": "1"
   },
   "cSpell.words": [
+    "preact",
+    "tabler",
+    "twind",
     "Webp"
   ]
 }
