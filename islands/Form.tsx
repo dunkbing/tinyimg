@@ -4,10 +4,18 @@ import { useToaster } from "fresh_toaster/hooks/index.tsx";
 
 import FileItem from "@/islands/FileItem.tsx";
 import Converter, { Format } from "@/islands/Converter.tsx";
+import { signal } from "@preact/signals";
+import { Button } from "@/components/Button.tsx";
+import { downloadFile } from "@/utils/http.ts";
+import { Loader } from "@/components/Loader.tsx";
 
 type FormProps = {
   uploadUrl: string;
+  downloadUrl: string;
 };
+
+const filesSig = signal<string[]>([]);
+const downloadSig = signal<boolean>(false);
 
 export default function Form(props: FormProps) {
   const [toasts, toaster] = useToaster();
@@ -44,8 +52,35 @@ export default function Form(props: FormProps) {
     }
   };
 
+  const downloadAll = async () => {
+    downloadSig.value = true;
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    const raw = JSON.stringify({
+      "files": filesSig.value,
+    });
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      body: raw,
+    };
+
+    try {
+      const response = await fetch(
+        props.downloadUrl,
+        requestOptions,
+      );
+      const json = await response.json() as { url: string };
+      downloadFile(json.url);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      downloadSig.value = false;
+    }
+  };
+
   return (
-    <div class="w-full">
+    <div class="w-full flex flex-col items-center space-y-2">
       <div className="flex items-center justify-center w-full">
         <label
           htmlFor="dropzone-file"
@@ -80,10 +115,27 @@ export default function Form(props: FormProps) {
           />
         </label>
       </div>
-      <Converter onFormatChange={(nf) => setFormats(nf)} />
+      <Converter
+        onFormatChange={(nf) => {
+          filesSig.value = [];
+          setFormats(nf);
+        }}
+      />
+      {(!!files?.length &&
+        (filesSig.value.length === files.length * (formats.length || 1))) && (
+        <Button colorMode="secondary" onClick={downloadAll}>
+          {downloadSig.value && <Loader />}
+          Download all
+        </Button>
+      )}
       {files && (
         [...files].map((file: File) => (
-          <FileItem file={file} uploadUrl={props.uploadUrl} formats={formats} />
+          <FileItem
+            file={file}
+            uploadUrl={props.uploadUrl}
+            formats={formats}
+            filesSig={filesSig}
+          />
         ))
       )}
     </div>

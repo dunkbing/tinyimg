@@ -1,19 +1,26 @@
 import Code from "@/islands/Code.tsx";
 
 export default function API(props: { baseUrl: string }) {
-  const sampleResponse = [{
-    url: "https://example.com/audio.mp3",
-    text: "Hello, world!",
-  }];
+  const sampleResponse = {
+    data: [
+      {
+        savedBytes: 0,
+        newSize: 0,
+        imageUrl: "",
+        format: "",
+      },
+    ],
+    errors: [],
+  };
 
   return (
     <div class="flex flex-col items-center justify-center px-5 bg-white rounded shadow-lg p-8">
       <div>
-        <h1 class="text-2xl font-semibold mb-4">Text2Audio API Instructions</h1>
+        <h1 class="text-2xl font-semibold mb-4">TinyIMG API Instructions</h1>
 
         <p class="mb-4">
-          Welcome to the Text2Audio API! Follow the instructions below to
-          convert text to audio using our API.
+          Welcome to the TinyIMG API! Follow the instructions below to compress
+          your images using our API.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">1. Make a Request</h2>
@@ -23,29 +30,7 @@ export default function API(props: { baseUrl: string }) {
         </p>
 
         <Code
-          code={`curl -X POST -H "Content-Type: application/json" -d '{"language": "en-US", "paragraphs": "test paragraph", "splitParagraph": true}' ${props.baseUrl}/api/audio`}
-        />
-
-        <p class="mb-2">
-          You can also use the <b>fetch</b>{"  "}API with Javascript
-        </p>
-
-        <Code
-          code={`fetch('${props.baseUrl}/api/audio', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              language: 'en-US',
-              paragraphs: 'test paragraph',
-              splitParagraph: true
-            })
-          })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
-          `}
+          code={`curl --location '${props.baseUrl}/upload' --form 'file=@"/path/to/image"' --form 'formats="png,jpg,webp"'`}
         />
 
         <h2 className="text-xl font-semibold mb-2">2. Response</h2>

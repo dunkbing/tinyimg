@@ -5,6 +5,7 @@ import Head from "@/components/Head.tsx";
 import config from "@/utils/config.ts";
 
 const uploadUrl = `${config.apiUrl}/upload`;
+const downloadUrl = `${config.apiUrl}/download-all`;
 
 export default function Home(ctx: PageProps) {
   return (
@@ -17,7 +18,7 @@ export default function Home(ctx: PageProps) {
           rel="preload"
         />
       </Head>
-      <Form uploadUrl={uploadUrl} />
+      <Form uploadUrl={uploadUrl} downloadUrl={downloadUrl} />
     </div>
   );
 }

@@ -3,11 +3,14 @@ import IconFileDownload from "tabler_icons_tsx/file-download.tsx";
 
 import { formatPercentage, truncateString } from "@/utils/strings.ts";
 import { Loader } from "@/components/Loader.tsx";
+import { downloadFile } from "@/utils/http.ts";
+import { Signal } from "@preact/signals";
 
 type FileItemProps = {
   file: File;
   uploadUrl: string;
   formats: string[];
+  filesSig: Signal<string[]>;
 };
 
 type FileResponse = {
@@ -24,9 +27,10 @@ type FileItemState = {
   statusColor: string;
   prefixSign: string;
   format: string;
+  imageUrl: string;
 };
 
-const FileItem = ({ file, uploadUrl, formats }: FileItemProps) => {
+const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
   const imageType = file.type?.split("/")?.[1];
   const [state, setState] = useState<FileItemState[]>([]);
   const [compressing, setCompressing] = useState(false);
@@ -42,11 +46,12 @@ const FileItem = ({ file, uploadUrl, formats }: FileItemProps) => {
           method: "POST",
           body: formData,
         });
-        const { data } = await res.json() as {
+        const { data, files } = await res.json() as {
           data: FileResponse[];
           errors: string[];
           files: string[];
         };
+        filesSig.value = [...filesSig.value, ...files];
         const newState: FileItemState[] = data.map((fr) => {
           const savedPercentage = (fr.savedBytes / file.size) *
             100;
@@ -66,6 +71,7 @@ const FileItem = ({ file, uploadUrl, formats }: FileItemProps) => {
             statusColor,
             prefixSign,
             format: fr.format,
+            imageUrl: fr.imageUrl,
           };
         });
         setState(newState);
@@ -80,50 +86,53 @@ const FileItem = ({ file, uploadUrl, formats }: FileItemProps) => {
   }, [file, formats, uploadUrl]);
 
   return (
-    <div className="flex flex-row items-center justify-between bg-white p-3 rounded-lg shadow-md my-2 w-full">
-      <div className="flex flex-row items-center space-x-4">
+    <div className="flex flex-col items-center bg-white p-3 rounded-lg shadow-md my-2">
+      <div className="flex flex-col lg:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="flex-shrink-0">
           <img
             src={URL.createObjectURL(file)}
             alt={file.name}
-            className="w-32 h-32 object-cover rounded-md"
+            className="w-32 h-32 object-cover rounded-lg"
           />
         </div>
         <div className="flex flex-col space-y-1">
-          <p className="text-lg font-semibold">
-            {truncateString(file.name, 40)}
+          <p className="text-sm font-semibold line-clamp-1">
+            {truncateString(file.name, 30)}
           </p>
           <div className="flex flex-row text-gray-500">
             <p>{imageType}</p>
             <span className="mx-2">•</span>
             <p>{(file.size / 1024).toFixed(2)} KB</p>
           </div>
-          {compressing ? <Loader /> : (
-            <div class="flex flex-row">
-              <div className="flex flex-col py-2 text-sm">
-                <p className="text-gray-500">new size</p>
-                <p className={`font-bold`}>saved</p>
-              </div>
-              {state.map((s) => (
-                <>
-                  <div className="flex flex-col bg-blue-100 rounded-l-md p-2 text-sm ml-1">
-                    <p className="text-gray-500">
-                      {((s.newSize || 0) / 1024).toFixed(2)} KB
-                    </p>
-                    <p
-                      className={`font-bold ${s.statusColor}`}
+          {compressing
+            ? <Loader />
+            : (
+              <div class="flex flex-col lg:flex-row items-center space-y-1 md:space-x-1">
+                <div className="flex flex-col py-2 text-sm hidden lg:block">
+                  <p className="text-gray-500">new size</p>
+                  <p className={`font-bold`}>saved</p>
+                </div>
+                {state.map((s, index) => (
+                  <div class="flex flex-row" key={index}>
+                    <div className="flex flex-col items-center bg-blue-100 rounded-l-md py-2 text-sm ml-1 w-24">
+                      <p className="text-gray-500">
+                        {((s.newSize || 0) / 1024).toFixed(2)} KB
+                      </p>
+                      <p className={`font-bold ${s.statusColor}`}>
+                        {formatPercentage(s.savedPercentage)}
+                      </p>
+                    </div>
+                    <button
+                      className="flex flex-col items-center justify-center w-16 bg-blue-200 text-blue-500 px-3 py-1.5 rounded-r-md hover:bg-blue-300 focus:outline-none focus:ring focus:border-blue-300"
+                      onClick={() => downloadFile(s.imageUrl)}
                     >
-                      {formatPercentage(s.savedPercentage)}
-                    </p>
+                      <IconFileDownload className="w-6 h-6" />
+                      <p className="text-sm font-bold">{s.format || "jpg"}</p>
+                    </button>
                   </div>
-                  <button className="flex flex-col items-center justify-center bg-blue-200 text-blue-500 px-3 py-1.5 rounded-r-md hover:bg-blue-300 focus:outline-none focus:ring focus:border-blue-300">
-                    <IconFileDownload className="w-6 h-6" />
-                    <p className="text-sm font-bold">{s.format || "jpg"}</p>
-                  </button>
-                </>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
         </div>
       </div>
     </div>

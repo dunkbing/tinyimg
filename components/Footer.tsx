@@ -61,10 +61,11 @@ export default function Footer(props: FooterProps) {
         <MadeWithFreshBadge />
       </a>
       <nav class={NAV_STYLES}>
-        <a
+        {
+          /* <a
           href="https://github.com/dunkbing"
           target="_blank"
-          aria-label="OptiPic repo on GitHub"
+          aria-label="TinyImg repo on GitHub"
           class={LINK_STYLES}
         >
           <IconBrandGithub class="h-12 w-12" />
@@ -72,16 +73,17 @@ export default function Footer(props: FooterProps) {
         <a
           href="https://twitter.com/dunkbingg"
           target="_blank"
-          aria-label="OptiPic developer on X"
+          aria-label="TinyImg developer on X"
           class={LINK_STYLES}
         >
           <IconBrandTwitter class="h-12 w-12" />
-        </a>
+        </a> */
+        }
         {
           /* <a
           href="https://www.tiktok.com/@ninzaech"
           target="_blank"
-          aria-label="OptiPic developer on Tiktok"
+          aria-label="TinyImg developer on Tiktok"
           class={LINK_STYLES}
         >
           <IconBrandTiktok class="h-6 w-6" />
@@ -89,7 +91,7 @@ export default function Footer(props: FooterProps) {
         }
       </nav>
       <span class="text-center mt-1">
-        optipic.cc © 2023 OptiPic. All rights reserved.
+        tinyimg.cc © 2023 TinyImg. All rights reserved.
       </span>
       <div className="px-8 mx-auto">
         Built by{" "}

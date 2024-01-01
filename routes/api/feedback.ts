@@ -14,7 +14,7 @@ export const handler = {
     console.log(config);
     const { subject, message } = (await req.json()) as FeedbackData;
     const text = [
-      "Text2Audio Feedback",
+      "TinyIMG Feedback",
       "---------------",
       subject,
       "---------------",

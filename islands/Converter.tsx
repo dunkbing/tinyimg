@@ -37,7 +37,7 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md w-80">
       <label className="flex items-center space-x-2 cursor-pointer">
         <input
           type="checkbox"
@@ -59,18 +59,18 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
           </div>
         </div>
         <span className="text-lg font-semibold text-gray-800">
-          Convert my image
+          Convert images
         </span>
       </label>
 
       {convertImage && (
         <div className="mt-4">
-          <p className="text-lg font-semibold mb-2 text-gray-800">
+          <p className="text-md font-semibold mb-2 text-gray-800">
             Select image formats:
           </p>
-          <div className="flex space-x-4 divide-x">
+          <div className="flex space-x-2">
             <button
-              className={`px-4 py-2 rounded-full ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold ${
                 selectedFormats.includes("png")
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
@@ -80,7 +80,7 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
               PNG
             </button>
             <button
-              className={`px-4 py-2 rounded-full ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold ${
                 selectedFormats.includes("jpg")
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
@@ -90,7 +90,7 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
               JPG
             </button>
             <button
-              className={`px-4 py-2 rounded-full ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold ${
                 selectedFormats.includes("webp")
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
@@ -100,14 +100,14 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
               WebP
             </button>
             <button
-              className={`px-4 py-2 rounded-full ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold ${
                 selectedFormats.length === 3
                   ? "bg-green-500 text-white"
                   : "bg-gray-200 text-gray-700"
               } hover:bg-green-600 hover:text-white focus:outline-none focus:ring focus:border-blue-300`}
               onClick={() => handleFormatToggle("selectAll")}
             >
-              Select All
+              All
             </button>
           </div>
         </div>
