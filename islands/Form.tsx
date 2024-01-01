@@ -80,7 +80,7 @@ export default function Form(props: FormProps) {
   };
 
   return (
-    <div class="w-full flex flex-col items-center space-y-2">
+    <div class="w-full flex flex-col items-center space-y-4 mt-8">
       <div className="flex items-center justify-center w-full">
         <label
           htmlFor="dropzone-file"
