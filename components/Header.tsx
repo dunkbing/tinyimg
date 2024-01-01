@@ -60,7 +60,7 @@ export default function Header(props: HeaderProps) {
           `}
       </script>
       <nav
-        class={"hidden font-semibold flex-col gap-x-4 divide-y divide-solid sm:(flex items-center flex-row divide-y-0)"}
+        class={"hidden font-semibold text-lg flex-col gap-x-4 divide-y divide-solid sm:(flex items-center flex-row divide-y-0)"}
       >
         <a
           href="/api"
