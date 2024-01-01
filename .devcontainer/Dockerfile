@@ -7,3 +7,12 @@ RUN mkdir -p /deno \
 
 ENV PATH=${DENO_INSTALL}/bin:${PATH} \
     DENO_DIR=${DENO_INSTALL}/.cache/deno
+
+# install go
+RUN curl -OL https://golang.org/dl/go1.21.5.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz \
+    && rm go1.21.5.linux-amd64.tar.gz
+ENV PATH=$PATH:/usr/local/go/bin
+
+# install flyctl
+RUN curl -L https://fly.io/install.sh | sh
