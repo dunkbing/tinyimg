@@ -17,7 +17,6 @@ export function Promote() {
         <a
           href="https://text2audio.cc"
           target="_blank"
-          rel="noopener noreferrer"
           className="bg-blue-500 text-white px-4 py-2 rounded-md inline-block hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300"
         >
           Visit Now
