@@ -8,7 +8,7 @@ export function Promote() {
       />
       <div className="px-4 pb-4">
         <h2 className="text-xl font-semibold text-gray-800 mb-1">
-          Check out text2audio.cc!
+          Also check out text2audio.cc!
         </h2>
         <p className="text-gray-600 mb-2">
           Convert text to audio easily with text2audio.cc. Explore a new way to
