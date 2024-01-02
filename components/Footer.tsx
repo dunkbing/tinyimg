@@ -61,8 +61,7 @@ export default function Footer(props: FooterProps) {
         <MadeWithFreshBadge />
       </a>
       <nav class={NAV_STYLES}>
-        {
-          /* <a
+        <a
           href="https://github.com/dunkbing"
           target="_blank"
           aria-label="TinyImg repo on GitHub"
@@ -77,8 +76,7 @@ export default function Footer(props: FooterProps) {
           class={LINK_STYLES}
         >
           <IconBrandTwitter class="h-12 w-12" />
-        </a> */
-        }
+        </a>
         {
           /* <a
           href="https://www.tiktok.com/@ninzaech"
