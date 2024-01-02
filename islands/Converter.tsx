@@ -12,7 +12,6 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
 
   const toggleConvertImage = () => {
     setConvertImage(!convertImage);
-    // setSelectedFormats([]);
   };
 
   const handleFormatToggle = (format: Format) => {
