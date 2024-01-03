@@ -1,9 +1,12 @@
 package webp
 
 import (
-	"bytes"
 	"image"
 	"io"
+	"log/slog"
+	"os/exec"
+	"path"
+	"strings"
 
 	"github.com/chai2010/webp"
 )
@@ -15,18 +18,34 @@ type Options struct {
 }
 
 // DecodeWebp a webp file and return an image.
-func DecodeWebp(r io.Reader) (image.Image, error) {
+func DecodeWebp(r io.Reader) (image.Image, string, error) {
+	realFormat := "webp"
 	i, err := webp.Decode(r)
 	if err != nil {
-		return nil, err
+		i, realFormat, err = image.Decode(r)
+		if err != nil {
+			return nil, "", err
+		}
 	}
-	return i, nil
+	return i, realFormat, nil
 }
 
-// EncodeWebp encodes an image into webp and returns a buffer.
-func EncodeWebp(i image.Image, o *Options) (buf bytes.Buffer, err error) {
-	if err = webp.Encode(&buf, i, &webp.Options{Lossless: o.Lossless, Quality: float32(o.Quality)}); err != nil {
-		return buf, err
+// Encode encodes an image into webp and returns a buffer.
+func Encode(inputFile, outDir string) (string, error) {
+	slog.Info("Encode WebP", "inputFile", inputFile)
+	filename := path.Base(inputFile)
+	outputFile := path.Join(outDir, filename)
+	outputFile = strings.Replace(outputFile, path.Ext(outputFile), ".webp", 1)
+
+	cmd := exec.Command(
+		"cwebp", "-q", "80",
+		inputFile, "-o", outputFile,
+	)
+	slog.Info("cmd", "cmd", cmd.String())
+	err := cmd.Run()
+	if err != nil {
+		return "", err
 	}
-	return buf, nil
+
+	return outputFile, nil
 }
