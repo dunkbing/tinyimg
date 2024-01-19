@@ -51,8 +51,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	mimeType := header.Header.Get("Content-Type")
 	fileType, _ := image.GetFileType(mimeType)
-	filename := header.Filename
-	ext := filepath.Ext(header.Filename)
+	filename := filepath.Base(header.Filename)
+	ext := filepath.Ext(filename)
 	c := config.GetConfig()
 	dest := filepath.Join(c.App.InDir, filename)
 	slog.Info("Upload dest", "dest", dest)

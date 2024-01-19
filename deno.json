@@ -10,7 +10,7 @@
   "lint": { "rules": { "tags": ["fresh", "recommended"] } },
   "imports": {
     "@/": "./",
-    "$fresh/": "https://deno.land/x/fresh@1.6.1/",
+    "$fresh/": "https://deno.land/x/fresh@1.6.3/",
     "fresh_toaster/": "https://deno.land/x/fresh_toaster@v1.0.1/",
     "preact": "https://esm.sh/preact@10.19.2",
     "preact/": "https://esm.sh/preact@10.19.2/",
