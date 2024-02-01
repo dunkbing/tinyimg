@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
+	"optipic/converter/config"
 	"optipic/converter/image"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -48,8 +51,17 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	mimeType := header.Header.Get("Content-Type")
 	fileType, _ := image.GetFileType(mimeType)
-	filename := header.Filename
-	ext := filepath.Ext(header.Filename)
+	filename := filepath.Base(header.Filename)
+	filename = strings.ReplaceAll(filename, " ", "_")
+	ext := filepath.Ext(filename)
+	c := config.GetConfig()
+	dest := filepath.Join(c.App.InDir, filename)
+	slog.Info("Upload", "dest", dest)
+	err = os.WriteFile(dest, data, 0644)
+	if err != nil {
+		http.Error(w, "Error writing the file", http.StatusInternalServerError)
+		return
+	}
 	formatStr := r.FormValue("formats")
 	formats := make([]string, 0)
 	if formatStr != "" {
@@ -59,12 +71,13 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	f := image.File{
-		Data:     data,
-		Ext:      ext,
-		MimeType: header.Header.Get("Content-Type"),
-		Name:     filename,
-		Size:     header.Size,
-		Formats:  formats,
+		Data:      data,
+		Ext:       ext,
+		MimeType:  header.Header.Get("Content-Type"),
+		Name:      filename,
+		Size:      header.Size,
+		Formats:   formats,
+		InputFileDest: dest,
 	}
 
 	if !isImage(f.MimeType) {

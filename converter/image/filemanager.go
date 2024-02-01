@@ -23,7 +23,7 @@ func NewFileManager() *FileManager {
 	logger := slog.Default()
 	logger.Info("FileManager initialized...")
 	return &FileManager{
-		config: config.NewConfig(),
+		config: config.GetConfig(),
 		stats:  stat.NewStat(),
 		Logger: logger,
 	}

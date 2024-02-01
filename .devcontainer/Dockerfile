@@ -16,3 +16,6 @@ ENV PATH=$PATH:/usr/local/go/bin
 
 # install flyctl
 RUN curl -L https://fly.io/install.sh | sh
+
+RUN apt update && apt upgrade -y
+RUN apt install pngquant jpegoptim imagemagick webp -y

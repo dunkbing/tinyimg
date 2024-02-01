@@ -1,0 +1,82 @@
+name: build-oci-image
+
+run-name: Build OCI Image for GoLang binary
+
+on:
+  push:
+    branches: ['main']
+
+env:
+  FULL_IMAGE_NAME: ${{ github.repository }} # full image name: owner/image
+
+jobs:
+  build-oci-image:
+    runs-on: ubuntu-22.04
+
+    # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      contents: read # for actions/checkout
+      packages: write # for OCI build
+      #id-token: write # for requesting OIDC JWT from 3rd party
+
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event from ${{ github.actor }}."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+      # checkout
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      # debug
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # debug github context and env
+      - name: Dump env
+        run: env | sort
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      # docker hub credentials
+      - name: login to docker hub
+        uses: docker/login-action@v3
+        with:
+          #registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # tags and labels
+      - name: Extract metadata (tags, labels) for image ${{ env.FULL_IMAGE_NAME }}
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # https://docs.github.com/en/actions/publishing-packages/publishing-docker-images
+          # push to both docker hub and Github Container Registry
+          images: |
+            ${{ env.FULL_IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=ref,event=pr
+            type=ref,event=branch
+            # in addition to full semantic version (x.y.z) would also create (x.y)
+            #type=semver,pattern={{major}}.{{minor}}
+
+      # build OCI image and push to registries (Docker Hub and Github Container Registry)
+      - name: build and push docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            MY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            MY_BUILTBY=github-action

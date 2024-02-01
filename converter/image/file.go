@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"image"
 	"io"
 	"log/slog"
@@ -20,16 +19,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/disintegration/imaging"
-	"github.com/muesli/smartcrop"
-	"github.com/muesli/smartcrop/nfnt"
-)
-
-const (
-	fill = iota
-	fit
-	smart
 )
 
 var mimes = map[string]string{
@@ -50,6 +39,7 @@ type File struct {
 	Name          string `json:"name"`
 	Size          int64  `json:"size"`
 	ConvertedFile string
+	InputFileDest     string
 	Image         image.Image
 	Formats       []string
 }
@@ -64,18 +54,21 @@ func (f *File) Decode() error {
 
 	switch mime {
 	case "jpg", "jpeg":
-		f.Image, err = jpeg.DecodeJPEG(bytes.NewReader(f.Data))
+		f.Image, f.Ext, err = jpeg.DecodeJPEG(bytes.NewReader(f.Data))
 	case "png":
-		f.Image, err = png.DecodePNG(bytes.NewReader(f.Data))
+		f.Image, f.Ext, err = png.DecodePNG(bytes.NewReader(f.Data))
 	case "webp":
-		f.Image, err = webp.DecodeWebp(bytes.NewReader(f.Data))
+		f.Image, f.Ext, err = webp.DecodeWebp(bytes.NewReader(f.Data))
 	default:
 		err = errors.New("unsupported file type:" + mime)
 	}
 	if err != nil {
 		return err
 	}
-	return nil
+	newFileName := strings.Split(f.InputFileDest, ".")[0] + "." + f.Ext
+	err = os.Rename(f.InputFileDest, newFileName)
+	f.InputFileDest = newFileName
+	return err
 }
 
 // GetConvertedSize returns the size of the converted file.
@@ -112,44 +105,6 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	// TODO resizing should probably be in its own method
 	var errs []error
 	t := time.Now()
-	if c.App.Sizes != nil {
-		for _, r := range c.App.Sizes {
-			if r.Height <= 0 || r.Width <= 0 {
-				logger.Warn("invalid image size", "size", r.String())
-				continue
-			}
-			var i image.Image
-			var s string
-			switch r.Strategy {
-			case fill:
-				i = imaging.Fill(f.Image, r.Width, r.Height, imaging.Center, imaging.Lanczos)
-				s = r.String()
-			case fit:
-				i = imaging.Fit(f.Image, r.Width, r.Height, imaging.Lanczos)
-				s = fmt.Sprintf("%dx%d", i.Bounds().Max.X, i.Bounds().Max.Y)
-			case smart:
-				analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
-				crop, err := analyzer.FindBestCrop(f.Image, r.Width, r.Height)
-				if err != nil {
-					errs = append(errs, err)
-					continue
-				}
-				croppedImg := f.Image.(SubImager).SubImage(crop)
-				i = imaging.Resize(croppedImg, r.Width, r.Height, imaging.Lanczos)
-				s = fmt.Sprintf("%dx%d", i.Bounds().Max.X, i.Bounds().Max.Y)
-			}
-			buf, err := encToBuf(i, f.Ext)
-			dest := path.Join(c.App.OutDir, f.Name+"--"+s+"."+f.Ext)
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
-				errs = append(errs, err)
-				continue
-			}
-		}
-	}
 	compressedFiles := []string{}
 	s3Client, err := NewS3Client()
 	if err != nil {
@@ -160,30 +115,24 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	var wg sync.WaitGroup
 	wg.Add(len(formats))
 	for i, format := range formats {
-		fmt.Println("format", format)
 		go func(format string, index int) {
 			defer wg.Done()
 			var savedBytes, newSize int64 // bytes
-			buf, err := encToBuf(f.Image, format)
+			outputFile, err := encToBuf(f, format)
 			if err != nil {
 				errs = append(errs, err)
 				return
 			}
 			filename := strings.Split(f.Name, ".")[0]
 			filename = filename + "." + format
-			dest := path.Join(c.App.OutDir, filename)
 			compressedFiles = append(compressedFiles, filename)
-			if err = os.WriteFile(dest, buf.Bytes(), 0666); err != nil {
-				errs = append(errs, err)
-				return
-			}
 			nt := time.Since(t).Milliseconds()
 
-			err = s3Client.UploadFile(filename, dest)
+			err = s3Client.UploadFile(filename, outputFile)
 			if err != nil {
 				logger.Error("failed to upload file to s3", "error", err)
 			}
-			f.ConvertedFile = filepath.Clean(dest)
+			f.ConvertedFile = filepath.Clean(outputFile)
 			savedBytes, _ = f.GetSavings()
 			newSize, _ = f.GetConvertedSize()
 			imageUrl, _ := s3Client.GetFileUrl(filename)
@@ -203,21 +152,20 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 }
 
 // encToBuf encodes an image to a buffer using the configured target.
-func encToBuf(i image.Image, target string) (*bytes.Buffer, error) {
-	var b bytes.Buffer
-	var err error
+func encToBuf(f *File, target string) (outputFile string, err error) {
+	c := config.GetConfig()
 	switch target {
 	case "jpg", "jpeg":
-		b, err = jpeg.EncodeJPEG(i, &jpeg.Options{Quality: 80})
+		outputFile, err = jpeg.Encode(f.InputFileDest, c.App.OutDir)
 	case "png":
-		b, err = png.EncodePNG(i, &png.Options{Quality: 80})
+		outputFile, err = png.Encode(f.InputFileDest, c.App.OutDir)
 	case "webp":
-		b, err = webp.EncodeWebp(i, &webp.Options{Lossless: false, Quality: 80})
+		outputFile, err = webp.Encode(f.InputFileDest, c.App.OutDir)
 	}
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return &b, nil
+	return outputFile, nil
 }
 
 // GetFileType returns the file's type based on the given mime type.

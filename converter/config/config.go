@@ -8,16 +8,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 )
-
-const filename = "conf.json"
 
 // App represents application persistent configuration values.
 type App struct {
+	InDir   string        `json:"inDir"`
 	OutDir  string        `json:"outDir"`
 	Target  string        `json:"target"`
-	Sizes   []*size       `json:"sizes"`
 	JpegOpt *jpeg.Options `json:"jpegOpt"`
 	PngOpt  *png.Options  `json:"pngOpt"`
 	WebpOpt *webp.Options `json:"webpOpt"`
@@ -28,20 +25,25 @@ type Config struct {
 	App *App
 }
 
-// NewConfig returns a new instance of Config.
-func NewConfig() *Config {
-	c := &Config{}
-	c.App, _ = defaults()
+var config_ *Config
 
-	return c
+// GetConfig returns a new instance of Config.
+func GetConfig() *Config {
+	if config_ == nil {
+		c := &Config{}
+		c.App, _ = defaults()
+		config_ = c
+	}
+
+	return config_
 }
 
 // GetAppConfig returns the application configuration.
 func (c *Config) GetAppConfig() map[string]interface{} {
 	return map[string]interface{}{
+		"inDir":   c.App.InDir,
 		"outDir":  c.App.OutDir,
 		"target":  c.App.Target,
-		"sizes":   c.App.Sizes,
 		"jpegOpt": c.App.JpegOpt,
 		"pngOpt":  c.App.PngOpt,
 		"webpOpt": c.App.WebpOpt,
@@ -84,26 +86,18 @@ func defaults() (*App, error) {
 		}
 	}
 	a.OutDir = cp
+
+	id := path.Join(wd, "input")
+	cip := filepath.Clean(id)
+
+	if _, err = os.Stat(id); os.IsNotExist(err) {
+		if err = os.Mkdir(id, 0777); err != nil {
+			id = "./"
+			fmt.Printf("failed to create default input directory: %v", err)
+			return nil, err
+		}
+	}
+	a.InDir = cip
+
 	return a, nil
-}
-
-// rect represents an image width and height size.
-type rect struct {
-	Height int `json:"height,omitempty"`
-	Width  int `json:"width,omitempty"`
-}
-
-// String returns a string representation of the rect.
-// For example, "1280x720"
-func (r *rect) String() string {
-	w := strconv.Itoa(r.Width)
-	h := strconv.Itoa(r.Height)
-	return fmt.Sprintf("%sx%s", w, h)
-}
-
-// size represents an image resizing. Strategy represents an image resizing
-// strategy, such as cropping.
-type size struct {
-	rect
-	Strategy int `json:"strategy"`
 }
