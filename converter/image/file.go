@@ -39,7 +39,7 @@ type File struct {
 	Name          string `json:"name"`
 	Size          int64  `json:"size"`
 	ConvertedFile string
-	InputFile     string
+	InputFileDest     string
 	Image         image.Image
 	Formats       []string
 }
@@ -65,9 +65,9 @@ func (f *File) Decode() error {
 	if err != nil {
 		return err
 	}
-	newFileName := strings.Split(f.Name, ".")[0] + "." + f.Ext
-	err = os.Rename(f.InputFile, newFileName)
-	f.InputFile = newFileName
+	newFileName := strings.Split(f.InputFileDest, ".")[0] + "." + f.Ext
+	err = os.Rename(f.InputFileDest, newFileName)
+	f.InputFileDest = newFileName
 	return err
 }
 
@@ -156,11 +156,11 @@ func encToBuf(f *File, target string) (outputFile string, err error) {
 	c := config.GetConfig()
 	switch target {
 	case "jpg", "jpeg":
-		outputFile, err = jpeg.Encode(f.InputFile, c.App.OutDir)
+		outputFile, err = jpeg.Encode(f.InputFileDest, c.App.OutDir)
 	case "png":
-		outputFile, err = png.Encode(f.InputFile, c.App.OutDir)
+		outputFile, err = png.Encode(f.InputFileDest, c.App.OutDir)
 	case "webp":
-		outputFile, err = webp.Encode(f.InputFile, c.App.OutDir)
+		outputFile, err = webp.Encode(f.InputFileDest, c.App.OutDir)
 	}
 	if err != nil {
 		return "", err

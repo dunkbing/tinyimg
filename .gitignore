@@ -9,5 +9,6 @@
 _fresh/
 audios
 output/
+input/
 .DS_Store
 *.zip

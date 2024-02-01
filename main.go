@@ -52,10 +52,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	mimeType := header.Header.Get("Content-Type")
 	fileType, _ := image.GetFileType(mimeType)
 	filename := filepath.Base(header.Filename)
+	filename = strings.ReplaceAll(filename, " ", "_")
 	ext := filepath.Ext(filename)
 	c := config.GetConfig()
 	dest := filepath.Join(c.App.InDir, filename)
-	slog.Info("Upload dest", "dest", dest)
+	slog.Info("Upload", "dest", dest)
 	err = os.WriteFile(dest, data, 0644)
 	if err != nil {
 		http.Error(w, "Error writing the file", http.StatusInternalServerError)
@@ -76,7 +77,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		Name:      filename,
 		Size:      header.Size,
 		Formats:   formats,
-		InputFile: dest,
+		InputFileDest: dest,
 	}
 
 	if !isImage(f.MimeType) {
