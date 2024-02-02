@@ -24,3 +24,7 @@ spec:
             limits:
               cpu: 750m
               memory: 2048Mi
+      volumes:
+        - name: tinyimg-pv-storage
+          persistentVolumeClaim:
+            claimName: pv-claim
