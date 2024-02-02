@@ -2,6 +2,7 @@ import { LINK_STYLES, NAV_STYLES, SITE_BAR_STYLES } from "@/utils/constants.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import IconBrandTwitter from "tabler_icons_tsx/brand-twitter.tsx";
 import IconBrandTiktok from "tabler_icons_tsx/brand-tiktok.tsx";
+import IconBrandFacebook from "tabler_icons_tsx/brand-facebook.tsx";
 
 function MadeWithFreshBadge() {
   return (
@@ -55,16 +56,24 @@ export interface FooterProps {
 export default function Footer(props: FooterProps) {
   return (
     <footer
-      class={`${SITE_BAR_STYLES} flex flex-col items-center text-center mt-10`}
+      class={`${SITE_BAR_STYLES} flex flex-col items-center text-center space-y-2`}
     >
       <a class="mb-3" target="_blank" href="https://fresh.deno.dev">
         <MadeWithFreshBadge />
       </a>
       <nav class={NAV_STYLES}>
         <a
+          href="https://www.facebook.com/bingdevtrai"
+          target="_blank"
+          aria-label="Text2Audio developer on Facebook"
+          class={LINK_STYLES}
+        >
+          <IconBrandFacebook class="h-12 w-12" />
+        </a>
+        <a
           href="https://github.com/dunkbing"
           target="_blank"
-          aria-label="TinyImg repo on GitHub"
+          aria-label="Text2Audio repo on GitHub"
           class={LINK_STYLES}
         >
           <IconBrandGithub class="h-12 w-12" />
@@ -72,7 +81,7 @@ export default function Footer(props: FooterProps) {
         <a
           href="https://twitter.com/dunkbingg"
           target="_blank"
-          aria-label="TinyImg developer on X"
+          aria-label="Text2Audio developer on X"
           class={LINK_STYLES}
         >
           <IconBrandTwitter class="h-12 w-12" />
@@ -81,7 +90,7 @@ export default function Footer(props: FooterProps) {
           /* <a
           href="https://www.tiktok.com/@ninzaech"
           target="_blank"
-          aria-label="TinyImg developer on Tiktok"
+          aria-label="Text2Audio developer on Tiktok"
           class={LINK_STYLES}
         >
           <IconBrandTiktok class="h-6 w-6" />
@@ -89,7 +98,7 @@ export default function Footer(props: FooterProps) {
         }
       </nav>
       <span class="text-center mt-1">
-        tinyimg.cc © 2023 TinyImg. All rights reserved.
+        tinyimg.cc © 2024 TinyImg. All rights reserved.
       </span>
       <div className="px-8 mx-auto">
         Built by{" "}
