@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/stat"
-	"path/filepath"
 	"runtime/debug"
 )
 
@@ -62,20 +61,9 @@ func (fm *FileManager) Convert() (fileResults []FileResult, files []string, errs
 }
 
 func (fm *FileManager) ZipFiles(files []string) (string, error) {
-	s3Client, err := NewS3Client()
-	if err != nil {
-		return "", err
-	}
 	zippedFile, err := zipFiles(files, fm.config)
-	var zippedUrl string
 	if err != nil {
 		return "", err
-	} else {
-		err = s3Client.UploadFile(filepath.Base(zippedFile), zippedFile)
-		if err != nil {
-			return "", err
-		}
-		zippedUrl, err = s3Client.GetFileUrl(zippedFile)
-		return zippedUrl, err
 	}
+	return zippedFile, nil
 }

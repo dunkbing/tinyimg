@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
@@ -53,7 +54,12 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fileType, _ := image.GetFileType(mimeType)
 	filename := filepath.Base(header.Filename)
 	filename = strings.ReplaceAll(filename, " ", "_")
+
 	ext := filepath.Ext(filename)
+	fmt.Println("ext", ext)
+	if ext == ".jpeg" {
+		filename = strings.ReplaceAll(filename, ".jpeg", ".jpg")
+	}
 	c := config.GetConfig()
 	dest := filepath.Join(c.App.InDir, filename)
 	slog.Info("Upload", "dest", dest)
@@ -71,12 +77,12 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	f := image.File{
-		Data:      data,
-		Ext:       ext,
-		MimeType:  header.Header.Get("Content-Type"),
-		Name:      filename,
-		Size:      header.Size,
-		Formats:   formats,
+		Data:          data,
+		Ext:           ext,
+		MimeType:      header.Header.Get("Content-Type"),
+		Name:          filename,
+		Size:          header.Size,
+		Formats:       formats,
 		InputFileDest: dest,
 	}
 
@@ -121,16 +127,77 @@ func downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fm := image.NewFileManager()
-	zippedUrl, err := fm.ZipFiles(body.Files)
+	zippedPath, err := fm.ZipFiles(body.Files)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{
-		"url": zippedUrl,
-	})
+	zipFileName := filepath.Base(zippedPath)
+	zipFile, err := os.Open(zippedPath)
+	if err != nil {
+		http.Error(w, "Error opening zip file", http.StatusInternalServerError)
+		return
+	}
+	defer zipFile.Close()
+
+	// Set the content type header for zip files
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", zipFileName))
+
+	// Copy the zip file content to the response writer
+	_, err = io.Copy(w, zipFile)
+	if err != nil {
+		http.Error(w, "Error serving zip file", http.StatusInternalServerError)
+		return
+	}
+}
+
+func serveImgHandler(w http.ResponseWriter, r *http.Request) {
+	fileName := r.URL.Query().Get("f")
+	if fileName == "" {
+		http.Error(w, "Please provide a valid filename", http.StatusBadRequest)
+		return
+	}
+
+	filePath := filepath.Join("output", fileName)
+
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	// Open and serve the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		http.Error(w, "Error opening file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Set the content type header based on the file extension
+	contentType := getContentType(fileName)
+	w.Header().Set("Content-Type", contentType)
+
+	// Copy the file content to the response writer
+	_, err = io.Copy(w, file)
+	if err != nil {
+		http.Error(w, "Error serving file", http.StatusInternalServerError)
+		return
+	}
+}
+
+func getContentType(fileName string) string {
+	switch filepath.Ext(fileName) {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	case ".gif":
+		return "image/gif"
+	default:
+		return "application/octet-stream"
+	}
 }
 
 func isImage(mimeType string) bool {
@@ -142,8 +209,12 @@ func main() {
 	mux := http.NewServeMux()
 	uploadHandlerWithCors := enableCors(http.HandlerFunc(uploadHandler))
 	downloadZipHandlerWithCors := enableCors(http.HandlerFunc(downloadZipHandler))
+	serveImageHandlerWithCors := enableCors(http.HandlerFunc(serveImgHandler))
 	mux.Handle("/upload", uploadHandlerWithCors)
 	mux.Handle("/download-all", downloadZipHandlerWithCors)
+	mux.Handle("/image", serveImageHandlerWithCors)
+	fs := http.FileServer(http.Dir("./output"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	log.Println("Server started on port 8080")
 	err := http.ListenAndServe(":8080", mux)

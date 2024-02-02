@@ -23,6 +23,9 @@ func DecodeJPEG(r io.Reader) (image.Image, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	if realFormat == "jpeg" {
+		realFormat = "jpg"
+	}
 	return i, realFormat, nil
 }
 
@@ -48,7 +51,6 @@ func Encode(inputFile, outDir string) (string, error) {
 		}
 		inputFile = newInputFile
 	}
-	
 
 	cmd := exec.Command(
 		"jpegoptim",

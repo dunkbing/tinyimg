@@ -70,8 +70,13 @@ export default function Form(props: FormProps) {
         props.downloadUrl,
         requestOptions,
       );
-      const json = await response.json() as { url: string };
-      downloadFile(json.url);
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "images.zip";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error(error);
     } finally {

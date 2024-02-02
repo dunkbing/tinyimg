@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"log/slog"
@@ -39,7 +40,7 @@ type File struct {
 	Name          string `json:"name"`
 	Size          int64  `json:"size"`
 	ConvertedFile string
-	InputFileDest     string
+	InputFileDest string
 	Image         image.Image
 	Formats       []string
 }
@@ -106,10 +107,7 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 	var errs []error
 	t := time.Now()
 	compressedFiles := []string{}
-	s3Client, err := NewS3Client()
-	if err != nil {
-		logger.Error("failed to create s3 client", "error", err)
-	}
+
 	formats := f.Formats
 	res := make([]FileResult, len(formats))
 	var wg sync.WaitGroup
@@ -128,14 +126,10 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 			compressedFiles = append(compressedFiles, filename)
 			nt := time.Since(t).Milliseconds()
 
-			err = s3Client.UploadFile(filename, outputFile)
-			if err != nil {
-				logger.Error("failed to upload file to s3", "error", err)
-			}
 			f.ConvertedFile = filepath.Clean(outputFile)
 			savedBytes, _ = f.GetSavings()
 			newSize, _ = f.GetConvertedSize()
-			imageUrl, _ := s3Client.GetFileUrl(filename)
+			imageUrl := fmt.Sprintf("https://api.tinyimg.cc/image?f=%s", filename)
 
 			res[index] = FileResult{
 				SavedBytes: savedBytes,
