@@ -2,17 +2,19 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: tinyimg-via-cf-tunnel
-  annotations:
-    kubernetes.io/ingress.class: cloudflare-tunnel
+  namespace: default
 spec:
+  ingressClassName: cloudflare-tunnel
   rules:
   - host: api.tinyimg.cc
     http:
       paths:
-      - path: /*
-        pathType: Prefix
-        backend:
+      - backend:
           service:
             name: tinyimg-service
             port:
-              name: http
+              number: 80
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}
