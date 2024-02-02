@@ -34,5 +34,8 @@
     "tabler",
     "twind",
     "Webp"
-  ]
+  ],
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  }
 }

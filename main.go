@@ -145,9 +145,9 @@ func main() {
 	mux.Handle("/upload", uploadHandlerWithCors)
 	mux.Handle("/download-all", downloadZipHandlerWithCors)
 
+	log.Println("Server started on port 8080")
 	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
-	log.Println("Server started successfully.")
 }

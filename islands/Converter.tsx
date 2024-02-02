@@ -38,25 +38,14 @@ const Converter = ({ onFormatChange }: ConverterProps) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md w-80">
       <label className="flex items-center space-x-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={convertImage}
-          onChange={toggleConvertImage}
-          className="hidden"
-        />
-        <div className="relative flex">
-          <div
-            className={`w-12 h-6 bg-gray-300 rounded-full transition-colors duration-300 ease-in-out flex items-center ${
-              convertImage ? "bg-green-500" : "bg-gray-300"
-            }`}
-          >
-            <div
-              className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
-                convertImage ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </div>
-        </div>
+        <label class="switch">
+          <input
+            type="checkbox"
+            checked={convertImage}
+            onChange={toggleConvertImage}
+          />
+          <span class="slider round"></span>
+        </label>
         <span className="text-lg font-semibold text-gray-800">
           Convert images
         </span>

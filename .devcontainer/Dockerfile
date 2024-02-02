@@ -18,4 +18,8 @@ ENV PATH=$PATH:/usr/local/go/bin
 RUN curl -L https://fly.io/install.sh | sh
 
 RUN apt update && apt upgrade -y
-RUN apt install pngquant jpegoptim imagemagick webp -y
+RUN apt install pngquant jpegoptim imagemagick webp python3 python3-pip -y
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+RUN chmod +x ./kubectl
+RUN mv ./kubectl /usr/local/bin
+RUN pip install oci-cli --upgrade
