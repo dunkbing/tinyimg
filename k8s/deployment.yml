@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyimg-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tinyimg
+  template:
+    metadata:
+      labels:
+        app: tinyimg
+    spec:
+      containers:
+        - name: myapp
+          image: dunkbing/tinyimg:main
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 750m
+              memory: 2048Mi
