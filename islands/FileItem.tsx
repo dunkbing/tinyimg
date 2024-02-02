@@ -124,7 +124,11 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
                     </div>
                     <button
                       className="flex flex-col items-center justify-center w-16 bg-blue-200 text-blue-500 px-3 py-1.5 rounded-r-md hover:bg-blue-300 focus:outline-none focus:ring focus:border-blue-300"
-                      onClick={() => downloadFile(s.imageUrl)}
+                      onClick={() => {
+                        const params = new URL(s.imageUrl).searchParams;
+                        const filename = params.get("f");
+                        downloadFile(s.imageUrl, filename as string);
+                      }}
                     >
                       <IconFileDownload className="w-6 h-6" />
                       <p className="text-sm font-bold">{s.format || "jpg"}</p>
