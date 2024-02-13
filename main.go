@@ -210,6 +210,14 @@ func main() {
 	uploadHandlerWithCors := enableCors(http.HandlerFunc(uploadHandler))
 	downloadZipHandlerWithCors := enableCors(http.HandlerFunc(downloadZipHandler))
 	serveImageHandlerWithCors := enableCors(http.HandlerFunc(serveImgHandler))
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// send hello message
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]any{
+			"message": "Hello",
+		})
+	}))
 	mux.Handle("/upload", uploadHandlerWithCors)
 	mux.Handle("/download-all", downloadZipHandlerWithCors)
 	mux.Handle("/image", serveImageHandlerWithCors)
