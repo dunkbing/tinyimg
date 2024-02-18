@@ -98,7 +98,7 @@ export default function Footer(props: FooterProps) {
         }
       </nav>
       <span class="text-center mt-1">
-        tinyimg.cc © 2024 TinyImg. All rights reserved.
+        © TinyImg 2024. All rights reserved.
       </span>
       <div className="px-8 mx-auto">
         Built by{" "}
