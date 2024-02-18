@@ -36,5 +36,5 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "text2audio"
+          project: "tinyimg"
           entrypoint: "./main.ts"
