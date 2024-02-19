@@ -71,9 +71,9 @@ export default function Footer(props: FooterProps) {
           <IconBrandFacebook class="h-12 w-12" />
         </a>
         <a
-          href="https://github.com/dunkbing"
+          href="https://github.com/dunkbing/tinyimg"
           target="_blank"
-          aria-label="Text2Audio repo on GitHub"
+          aria-label="TinyImg repo on GitHub"
           class={LINK_STYLES}
         >
           <IconBrandGithub class="h-12 w-12" />
@@ -86,16 +86,14 @@ export default function Footer(props: FooterProps) {
         >
           <IconBrandTwitter class="h-12 w-12" />
         </a>
-        {
-          /* <a
-          href="https://www.tiktok.com/@ninzaech"
+        <a
+          href="https://www.tiktok.com/@dunkbing"
           target="_blank"
           aria-label="Text2Audio developer on Tiktok"
           class={LINK_STYLES}
         >
           <IconBrandTiktok class="h-6 w-6" />
-        </a> */
-        }
+        </a>
       </nav>
       <span class="text-center mt-1">
         © TinyImg 2024. All rights reserved.
