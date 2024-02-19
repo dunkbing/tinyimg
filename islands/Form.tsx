@@ -131,6 +131,7 @@ export default function Form(props: FormProps) {
             className="hidden"
             onChange={handleFileChange}
             multiple
+            accept="image/png, image/jpeg, image/webp"
           />
         </label>
       </div>
