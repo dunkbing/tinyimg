@@ -30,6 +30,21 @@ type FileItemState = {
   imageUrl: string;
 };
 
+const updateStats = async (stats: {
+  totalFiles: number;
+  totalSize: number;
+}) => {
+  const res = await fetch("/api/stats", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(stats),
+  });
+  const { data } = await res.json();
+  return data;
+};
+
 const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
   const imageType = file.type?.split("/")?.[1];
   const [state, setState] = useState<FileItemState[]>([]);
@@ -74,6 +89,12 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
             imageUrl: fr.imageUrl,
           };
         });
+        const savedBytes = data.reduce((acc, fr) => acc + fr.savedBytes, 0);
+        void updateStats({
+          totalFiles: files.length,
+          totalSize: savedBytes,
+        });
+
         setState(newState);
       } catch (error) {
         console.error(error);

@@ -1,6 +1,6 @@
 export const SITE_NAME = "TinyImg - Free Image Compressor";
 export const SITE_DESCRIPTION =
-  "Compress images online for free without losing quality. Reduce image file size of up to 90% without compromising quality.";
+  "Compress images online for free without losing quality. Reduce image file size of up to 80% without compromising quality.";
 
 export const BUTTON_STYLES =
   "px-4 py-2 bg-primary text-white rounded-lg border-1 border-primary transition duration-100 disabled:(opacity-50 cursor-not-allowed) hover:(bg-transparent text-primary)";

@@ -1,8 +1,17 @@
 export const kv = await Deno.openKv();
 
-export const voicesEntryKey = ["audios", "total"];
+export const statsEntryKey = ["stats"];
 
-const voicesEntry = await kv.get(voicesEntryKey);
-if (!voicesEntry.value) {
-  await kv.set(voicesEntryKey, 0);
+export type Stats = {
+  totalFiles: number;
+  totalSize: number;
+};
+
+const statsEntry = await kv.get(statsEntryKey);
+
+if (!statsEntry.value) {
+  await kv.set(statsEntryKey, {
+    totalFiles: 0,
+    totalSize: 0,
+  });
 }

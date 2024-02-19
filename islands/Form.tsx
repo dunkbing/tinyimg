@@ -1,12 +1,10 @@
 import { JSX } from "preact";
 import { useState } from "preact/hooks";
-import { useToaster } from "fresh_toaster/hooks/index.tsx";
 
 import FileItem from "@/islands/FileItem.tsx";
 import Converter, { Format } from "@/islands/Converter.tsx";
 import { signal } from "@preact/signals";
 import { Button } from "@/components/Button.tsx";
-import { downloadFile } from "@/utils/http.ts";
 import { Loader } from "@/components/Loader.tsx";
 
 type FormProps = {
@@ -18,7 +16,6 @@ const filesSig = signal<string[]>([]);
 const downloadSig = signal<boolean>(false);
 
 export default function Form(props: FormProps) {
-  const [toasts, toaster] = useToaster();
   const [files, setFiles] = useState<FileList | null>(null);
   const [formats, setFormats] = useState<Format[]>([]);
 
