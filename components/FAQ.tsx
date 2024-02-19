@@ -2,9 +2,9 @@ export function FAQ() {
   return (
     <div
       id="faq"
-      class="flex flex-col items-center justify-center mt-5 px-5"
+      class="flex flex-col items-center justify-center mt-2 px-5"
     >
-      <hr class="w-48 h-1 mx-auto my-4 border-0 rounded md:my-10 bg-gray-700" />
+      <hr class="w-48 h-1 mx-auto my-4 border-0 rounded md:my-2 bg-gray-700" />
       <h1 class="text-black text-2xl font-semibold mb-4">FAQ</h1>
       <div class="flex flex-col sm:px-8 lg:px-12 xl:px-32">
         <details>
@@ -26,7 +26,7 @@ export function FAQ() {
           </summary>
           <div class="px-4 pb-4">
             <p class="text-center">
-              Our tool utilizes lossy compression for PNG, JPG/JPEG, and GIF
+              This tool utilizes lossy compression for PNG, JPG/JPEG, and Webp
               files. You can upload up to 20 images of different types
               simultaneously. The server intelligently analyzes and reduces
               images to the smallest file size without compromising quality.

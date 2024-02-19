@@ -56,7 +56,7 @@ export interface FooterProps {
 export default function Footer(props: FooterProps) {
   return (
     <footer
-      class={`${SITE_BAR_STYLES} flex flex-col items-center text-center space-y-2`}
+      class={`${SITE_BAR_STYLES} flex flex-col items-center text-center space-y-2 my-2`}
     >
       <a class="mb-3" target="_blank" href="https://fresh.deno.dev">
         <MadeWithFreshBadge />
@@ -92,7 +92,7 @@ export default function Footer(props: FooterProps) {
           aria-label="Text2Audio developer on Tiktok"
           class={LINK_STYLES}
         >
-          <IconBrandTiktok class="h-6 w-6" />
+          <IconBrandTiktok class="h-12 w-12" />
         </a>
       </nav>
       <span class="text-center mt-1">

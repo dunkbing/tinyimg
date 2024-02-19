@@ -35,12 +35,6 @@ export default function Header(props: HeaderProps) {
           API
         </a>
         <a
-          href="/about"
-          class={NAV_ITEM}
-        >
-          About
-        </a>
-        <a
           href="/feedback"
           class={NAV_ITEM}
         >

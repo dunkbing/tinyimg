@@ -5,6 +5,7 @@ import Head from "@/components/Head.tsx";
 import { Promote } from "@/components/Promote.tsx";
 import { StatsView } from "@/components/Stats.tsx";
 import ProductHuntBadge from "@/components/ProductHuntBadge.tsx";
+import { FAQ } from "@/components/FAQ.tsx";
 import config from "@/utils/config.ts";
 import { kv, statsEntryKey } from "@/utils/kv.ts";
 
@@ -42,6 +43,7 @@ export default function Home(ctx: PageProps<unknown>) {
       <div class="mt-2" />
       <StatsView {...data as any} />
       <Promote />
+      <FAQ />
     </div>
   );
 }
