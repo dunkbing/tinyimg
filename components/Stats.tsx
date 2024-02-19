@@ -29,7 +29,7 @@ export function StatsView(props: { totalFiles: number; totalSize: number }) {
       class="flex flex-col items-center justify-center mt-2 px-5"
     >
       <p class="text-black text-xl font-semibold mb-4">
-        Total saved: {formatNumber(totalFiles)} files / {formatBytes(totalSize)}
+        Total files converted: {formatNumber(totalFiles)} files / {formatBytes(totalSize)}
       </p>
     </div>
   );

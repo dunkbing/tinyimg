@@ -2,9 +2,10 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 
 import Form from "@/islands/Form.tsx";
 import Head from "@/components/Head.tsx";
-import config from "@/utils/config.ts";
 import { Promote } from "@/components/Promote.tsx";
 import { StatsView } from "@/components/Stats.tsx";
+import ProductHuntBadge from "@/components/ProductHuntBadge.tsx";
+import config from "@/utils/config.ts";
 import { kv, statsEntryKey } from "@/utils/kv.ts";
 
 const uploadUrl = `${config.apiUrl}/upload`;
@@ -35,9 +36,11 @@ export default function Home(ctx: PageProps<unknown>) {
           rel="preload"
         />
       </Head>
-      <Form uploadUrl={uploadUrl} downloadUrl={downloadUrl} />
-      <StatsView {...data as any} />
       <div class="mt-4" />
+      <ProductHuntBadge />
+      <Form uploadUrl={uploadUrl} downloadUrl={downloadUrl} />
+      <div class="mt-2" />
+      <StatsView {...data as any} />
       <Promote />
     </div>
   );
