@@ -83,16 +83,8 @@ export default function Form(props: FormProps) {
 
   return (
     <div class="w-full flex flex-col items-center space-y-4 mt-8">
-      <span class="text-green-700 text-sm w-3/4">
-        Enhancing your website's images through the TinyImg algorithm offers
-        numerous advantages.{" "}
-        <br />By utilizing TinyImg, file sizes can be decreased by as much as
-        80% without compromising quality, resulting in quicker page loading
-        times. <br />{" "}
-        This optimization is crucial for maintaining user engagement and
-        delivering a pleasant browsing experience. Furthermore, it lowers
-        bandwidth consumption, enhancing the efficiency and cost-effectiveness
-        of your website.
+      <span class="text-green-700 text-base w-3/4">
+        Efficient WebP, PNG, and JPEG Compression for Faster Websites
       </span>
       <label
         for="dropzone-file"
