@@ -1,4 +1,4 @@
-export const SITE_NAME = "TinyImg - Free Image Compressor";
+export const SITE_NAME = "TinyImg - Free Image Compressor and Optimizer";
 export const SITE_DESCRIPTION =
   "Compress images online for free without losing quality. Reduce image file size of up to 80% without compromising quality.";
 
