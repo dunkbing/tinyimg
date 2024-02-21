@@ -19,10 +19,9 @@ export default function Head(props: HeadProps) {
         href={props.href}
         imageUrl="/cover1.png"
       />
-      {
-        /* <script
+      <script
         async
-        src="https://www.googletagmanager.com/gtag/js?id=G-ZJF7E4QKYV"
+        src="https://www.googletagmanager.com/gtag/js?id=G-0EQVP2T05T"
       />
       <script>
         {`
@@ -30,10 +29,9 @@ export default function Head(props: HeadProps) {
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-ZJF7E4QKYV');
+    gtag('config', 'G-0EQVP2T05T');
 `}
-      </script> */
-      }
+      </script>
       {props.children}
     </_Head>
   );
