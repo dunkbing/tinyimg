@@ -83,7 +83,7 @@ export default function Form(props: FormProps) {
 
   return (
     <div class="w-full flex flex-col items-center space-y-4 mt-8">
-      <span class="text-green-700 text-base w-3/4">
+      <span class="text-green-700 text-base text-center w-3/4">
         Efficient WebP, PNG, and JPEG Compression for Faster Websites
       </span>
       <label
@@ -135,11 +135,11 @@ export default function Form(props: FormProps) {
       />
       {(!!files?.length &&
         (filesSig.value.length === files.length * (formats.length || 1))) && (
-        <Button colorMode="secondary" onClick={downloadAll}>
-          {downloadSig.value && <Loader />}
-          Download all
-        </Button>
-      )}
+          <Button colorMode="secondary" onClick={downloadAll}>
+            {downloadSig.value && <Loader />}
+            Download all
+          </Button>
+        )}
       {files && (
         [...files].map((file: File) => (
           <FileItem
