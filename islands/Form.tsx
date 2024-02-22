@@ -83,9 +83,9 @@ export default function Form(props: FormProps) {
 
   return (
     <div class="w-full flex flex-col items-center space-y-4 mt-8">
-      <span class="text-green-700 text-base text-center w-3/4">
+      <h1 class="text-green-700 text-base text-center w-3/4">
         Efficient WebP, PNG, and JPEG Compression for Faster Websites
-      </span>
+      </h1>
       <label
         for="dropzone-file"
         class="block text-gray-700 font-bold mb-1 text-xl text-center"
