@@ -28,8 +28,9 @@ export function StatsView(props: { totalFiles: number; totalSize: number }) {
       id="about"
       class="flex flex-col items-center justify-center mt-2 px-5"
     >
-      <p class="text-black text-xl font-semibold mb-4">
-        Total files converted: {formatNumber(totalFiles)} files / {formatBytes(totalSize)}
+      <p class="text-green-800 text-center text-xl mb-4">
+        <b>{formatNumber(totalFiles)}</b> files converted <br />
+        <b>{formatBytes(totalSize)}</b> saved
       </p>
     </div>
   );
