@@ -42,7 +42,7 @@ export default function Home(ctx: PageProps<unknown>) {
       <Form uploadUrl={uploadUrl} downloadUrl={downloadUrl} />
       <div class="mt-2" />
       <StatsView {...data as any} />
-      {/* <Promote /> */}
+      <Promote />
       <FAQ />
     </div>
   );
