@@ -113,9 +113,12 @@ export default function Form(props: FormProps) {
               viewBox="0 0 20 16"
             >
             </svg>
-            <p className="mb-2 text-sm text-gray-500">
+            <p className="text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span>{" "}
-              or drag and drop
+              or drop your images here
+            </p>
+            <p className="mb-2 text-xs text-gray-500">
+              Upto 20 images at a time
             </p>
             <p className="text-xs text-gray-500">
               PNG, JPG, or WEBP
@@ -139,11 +142,11 @@ export default function Form(props: FormProps) {
       />
       {(!!files?.length &&
         (filesSig.value.length === files.length * (formats.length || 1))) && (
-          <Button colorMode="secondary" onClick={downloadAll}>
-            {downloadSig.value && <Loader />}
-            Download all
-          </Button>
-        )}
+        <Button colorMode="secondary" onClick={downloadAll}>
+          {downloadSig.value && <Loader />}
+          Download all
+        </Button>
+      )}
       {files && (
         [...files].map((file: File) => (
           <FileItem

@@ -4,6 +4,15 @@ export function FAQ() {
       id="faq"
       class="flex flex-col items-center justify-center mt-2 px-5"
     >
+      <h2 class="text-center font-semibold text-xl">
+        Customized Optimization for All Projects:
+      </h2>
+      <h3 class="text-center mb-2">
+        Discover the benefits of speedier page loads with our image optimization
+        tools, individually customized for website owners, developers, and
+        designers. Explore the advantages of our fast-loading, high-quality
+        image compression technology.
+      </h3>
       <hr class="w-48 h-1 mx-auto my-4 border-0 rounded md:my-2 bg-gray-700" />
       <h1 class="text-black text-2xl font-semibold mb-4">FAQ</h1>
       <div class="flex flex-col sm:px-8 lg:px-12 xl:px-32">
