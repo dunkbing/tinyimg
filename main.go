@@ -12,13 +12,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type RequestBody struct {
 	Files []string `json:"files"`
 }
 
-var allowedOrigin = "*"
+var allowedOrigin = os.Getenv("ALLOWED_ORIGIN")
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +38,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	startTime := time.Now()
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusInternalServerError)
@@ -50,16 +52,21 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mimeType := header.Header.Get("Content-Type")
+	mimeType := http.DetectContentType(data)
+	if !isImage(mimeType) {
+		http.Error(w, "Invalid file format. Only images are allowed.", http.StatusBadRequest)
+		return
+	}
+	fmt.Println("content type", mimeType, header.Filename)
 	fileType, _ := image.GetFileType(mimeType)
 	filename := filepath.Base(header.Filename)
 	filename = strings.ReplaceAll(filename, " ", "_")
 
 	ext := filepath.Ext(filename)
+	filename = strings.Replace(filename, ext, fmt.Sprintf(".%s", fileType), 1)
 	fmt.Println("ext", ext)
-	if ext == ".jpeg" {
-		filename = strings.ReplaceAll(filename, ".jpeg", ".jpg")
-	}
+	ext = fmt.Sprintf(".%s", fileType)
+
 	c := config.GetConfig()
 	dest := filepath.Join(c.App.InDir, filename)
 	slog.Info("Upload", "dest", dest)
@@ -68,6 +75,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error writing the file", http.StatusInternalServerError)
 		return
 	}
+	took := time.Since(startTime).Seconds()
+	fmt.Println("Write to file took", took)
 	formatStr := r.FormValue("formats")
 	formats := make([]string, 0)
 	if formatStr != "" {
@@ -79,16 +88,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	f := image.File{
 		Data:          data,
 		Ext:           ext,
-		MimeType:      header.Header.Get("Content-Type"),
+		MimeType:      mimeType,
 		Name:          filename,
 		Size:          header.Size,
 		Formats:       formats,
 		InputFileDest: dest,
-	}
-
-	if !isImage(f.MimeType) {
-		http.Error(w, "Invalid file format. Only images are allowed.", http.StatusBadRequest)
-		return
 	}
 
 	fileManager := image.NewFileManager()

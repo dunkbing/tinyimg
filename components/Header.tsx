@@ -29,12 +29,6 @@ export default function Header(props: HeaderProps) {
         class={"font-semibold flex flex-col gap-x-4 divide-y divide-solid sm:flex sm:items-center sm:flex-row sm:divide-y-0"}
       >
         <a
-          href="/api"
-          class={NAV_ITEM}
-        >
-          API
-        </a>
-        <a
           href="/feedback"
           class={NAV_ITEM}
         >

@@ -1,10 +1,12 @@
 package image
 
 import (
+	"fmt"
 	"log/slog"
 	"optipic/converter/config"
 	"optipic/converter/stat"
 	"runtime/debug"
+	"time"
 )
 
 // FileManager handles collections of Files for conversion.
@@ -47,6 +49,7 @@ func (fm *FileManager) Clear() {
 
 // Convert runs the conversion on all files in the FileManager.
 func (fm *FileManager) Convert() (fileResults []FileResult, files []string, errs []error) {
+	startTime := time.Now()
 	file := fm.File
 	fileResults, files, errs = file.Write(fm.config)
 
@@ -56,6 +59,9 @@ func (fm *FileManager) Convert() (fileResults []FileResult, files []string, errs
 		fm.stats.IncreaseImageCount(1)
 	}
 	fm.Clear()
+
+	took := time.Since(startTime).Seconds()
+	fmt.Println("Conversion took", took, "seconds")
 
 	return fileResults, files, errs
 }

@@ -41,7 +41,6 @@ func Encode(inputFile, outDir string) (string, error) {
 		"cwebp", "-q", "80",
 		inputFile, "-o", outputFile,
 	)
-	slog.Info("cmd", "cmd", cmd.String())
 	err := cmd.Run()
 	if err != nil {
 		return "", err

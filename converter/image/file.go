@@ -18,7 +18,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -103,44 +102,38 @@ type FileResult struct {
 
 // Write saves a file to disk based on the encoding target.
 func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
-	// TODO resizing should probably be in its own method
 	var errs []error
 	t := time.Now()
 	compressedFiles := []string{}
 
 	formats := f.Formats
 	res := make([]FileResult, len(formats))
-	var wg sync.WaitGroup
-	wg.Add(len(formats))
 	for i, format := range formats {
-		go func(format string, index int) {
-			defer wg.Done()
-			var savedBytes, newSize int64 // bytes
-			outputFile, err := encToBuf(f, format)
-			if err != nil {
-				errs = append(errs, err)
-				return
-			}
-			filename := strings.Split(f.Name, ".")[0]
-			filename = filename + "." + format
-			compressedFiles = append(compressedFiles, filename)
-			nt := time.Since(t).Milliseconds()
+		var savedBytes, newSize int64 // bytes
+		outputFile, err := encToBuf(f, format)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		filename := strings.Split(f.Name, ".")[0]
+		filename = filename + "." + format
+		compressedFiles = append(compressedFiles, filename)
+		nt := time.Since(t).Milliseconds()
 
-			f.ConvertedFile = filepath.Clean(outputFile)
-			savedBytes, _ = f.GetSavings()
-			newSize, _ = f.GetConvertedSize()
-			imageUrl := fmt.Sprintf("https://api.tinyimg.cc/image?f=%s", filename)
+		f.ConvertedFile = filepath.Clean(outputFile)
+		savedBytes, _ = f.GetSavings()
+		newSize, _ = f.GetConvertedSize()
+		hostUrl := os.Getenv("HOST_URL")
+		imageUrl := fmt.Sprintf("%s/image?f=%s", hostUrl, filename)
 
-			res[index] = FileResult{
-				SavedBytes: savedBytes,
-				NewSize:    newSize,
-				Time:       nt,
-				ImageUrl:   imageUrl,
-				Format:     format,
-			}
-		}(format, i)
+		res[i] = FileResult{
+			SavedBytes: savedBytes,
+			NewSize:    newSize,
+			Time:       nt,
+			ImageUrl:   imageUrl,
+			Format:     format,
+		}
 	}
-	wg.Wait()
 
 	return res, compressedFiles, errs
 }

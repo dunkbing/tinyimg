@@ -46,7 +46,6 @@ func Encode(inputFile, outDir string) (string, error) {
 			"convert", "-strip",
 			inputFile, newInputFile,
 		)
-		slog.Info("cmd", "cmd", convertCmd.String())
 		err := convertCmd.Run()
 		if err != nil {
 			slog.Error("convert error", "err", err)
@@ -63,7 +62,6 @@ func Encode(inputFile, outDir string) (string, error) {
 		"--output", outputFile,
 		"--force", "--strip",
 	)
-	slog.Info("cmd", "cmd", cmd.String())
 	err := cmd.Run()
 	if err != nil {
 		slog.Error("pngquant error", "err", err)
