@@ -1,5 +1,6 @@
 import { JSX } from "preact";
 import { useState } from "preact/hooks";
+import IconPhoto from "tabler_icons_tsx/photo.tsx"
 
 import FileItem from "@/islands/FileItem.tsx";
 import Converter, { Format } from "@/islands/Converter.tsx";
@@ -96,23 +97,16 @@ export default function Form(props: FormProps) {
       >
         Files
       </label>
-      <div className="flex items-center justify-center w-full">
+      <div className="flex items-center justify-center w-full px-2">
         <label
           htmlFor="dropzone-file"
-          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-200 hover:bg-gray-300"
+          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-400 border-dashed rounded-lg cursor-pointer bg-gray-200 hover:bg-gray-300 shadow-lg"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg
-              className="w-8 h-8 mb-4 text-gray-500"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 16"
-            >
-            </svg>
+          <div className="flex flex-col items-center justify-center space-y-1">
+            <IconPhoto size={55} />
             <p className="text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span>{" "}
               or drop your images here
@@ -142,11 +136,11 @@ export default function Form(props: FormProps) {
       />
       {(!!files?.length &&
         (filesSig.value.length === files.length * (formats.length || 1))) && (
-        <Button colorMode="secondary" onClick={downloadAll}>
-          {downloadSig.value && <Loader />}
-          Download all
-        </Button>
-      )}
+          <Button colorMode="secondary" onClick={downloadAll}>
+            {downloadSig.value && <Loader />}
+            Download all
+          </Button>
+        )}
       {files && (
         [...files].map((file: File) => (
           <FileItem

@@ -6,18 +6,13 @@ function formatNumber(number: number) {
 }
 
 function formatBytes(bytes: number) {
-  if (bytes >= 1000000000) {
-    return (bytes >= 2000000000)
-      ? Math.floor(bytes / 1000000000) + "Gb"
-      : "1Gb";
-  }
   if (bytes >= 1000000) {
     return (bytes >= 2000000) ? Math.floor(bytes / 1000000) + "Mb" : "1Mb";
   }
   if (bytes >= 1000) {
     return (bytes >= 2000) ? Math.floor(bytes / 1000) + "Kb" : "1Kb";
   }
-  return bytes + "Bytes";
+  return bytes.toLocaleString() + "Bytes";
 }
 
 export function StatsView(props: { totalFiles: number; totalSize: number }) {
