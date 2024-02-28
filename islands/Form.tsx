@@ -97,15 +97,15 @@ export default function Form(props: FormProps) {
       >
         Files
       </label>
-      <div className="flex items-center justify-center w-full px-2">
+      <div className="flex items-center justify-center w-full px-3">
         <label
           htmlFor="dropzone-file"
-          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-400 border-dashed rounded-lg cursor-pointer bg-gray-200 hover:bg-gray-300 shadow-lg"
+          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-400 border-dashed rounded-lg cursor-pointer bg-gray-200 hover:bg-gray-300 shadow-xl"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <div className="flex flex-col items-center justify-center space-y-1">
+          <div className="flex flex-col items-center justify-center space-y-1.5">
             <IconPhoto size={55} />
             <p className="text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span>{" "}
@@ -128,6 +128,7 @@ export default function Form(props: FormProps) {
           />
         </label>
       </div>
+      <div class="my-2" />
       <Converter
         onFormatChange={(nf) => {
           filesSig.value = [];
