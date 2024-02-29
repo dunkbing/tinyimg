@@ -26,7 +26,7 @@ export default function Form(props: FormProps) {
     const target = event.target as HTMLInputElement;
     const selectedFile = target?.files;
     if (selectedFile && selectedFile.length > 20) {
-      alert("You can only upload a maximum of 20 files");
+      alert("You can only upload 20 files at a time");
       return;
     }
     if (selectedFile) {
