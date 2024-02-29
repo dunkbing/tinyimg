@@ -7,17 +7,18 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/config"
+	"github.com/dunkbing/tinyimg/converter/jpeg"
+	"github.com/dunkbing/tinyimg/converter/png"
+	"github.com/dunkbing/tinyimg/converter/webp"
 	"image"
 	"io"
 	"log/slog"
-	"optipic/converter/config"
-	"optipic/converter/jpeg"
-	"optipic/converter/png"
-	"optipic/converter/webp"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,7 +30,7 @@ var mimes = map[string]string{
 	"image/webp": "webp",
 }
 
-var logger *slog.Logger = slog.Default()
+var logger = slog.Default()
 
 // File represents an image file.
 type File struct {
@@ -108,32 +109,37 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 
 	formats := f.Formats
 	res := make([]FileResult, len(formats))
+	var wg sync.WaitGroup
+	wg.Add(len(formats))
 	for i, format := range formats {
-		var savedBytes, newSize int64 // bytes
-		outputFile, err := encToBuf(f, format)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		filename := strings.Split(f.Name, ".")[0]
-		filename = filename + "." + format
-		compressedFiles = append(compressedFiles, filename)
-		nt := time.Since(t).Milliseconds()
+		go func(format string, index int) {
+			defer wg.Done()
+			var savedBytes, newSize int64 // bytes
+			outputFile, err := encToBuf(f, format)
+			if err != nil {
+				errs = append(errs, err)
+				return
+			}
+			filename := strings.Split(f.Name, ".")[0]
+			filename = filename + "." + format
+			compressedFiles = append(compressedFiles, filename)
+			nt := time.Since(t).Milliseconds()
 
-		f.ConvertedFile = filepath.Clean(outputFile)
-		savedBytes, _ = f.GetSavings()
-		newSize, _ = f.GetConvertedSize()
-		hostUrl := os.Getenv("HOST_URL")
-		imageUrl := fmt.Sprintf("%s/image?f=%s", hostUrl, filename)
+			f.ConvertedFile = filepath.Clean(outputFile)
+			savedBytes, _ = f.GetSavings()
+			newSize, _ = f.GetConvertedSize()
+			imageUrl := fmt.Sprintf("%s/image?f=%s", config.HostUrl, filename)
 
-		res[i] = FileResult{
-			SavedBytes: savedBytes,
-			NewSize:    newSize,
-			Time:       nt,
-			ImageUrl:   imageUrl,
-			Format:     format,
-		}
+			res[index] = FileResult{
+				SavedBytes: savedBytes,
+				NewSize:    newSize,
+				Time:       nt,
+				ImageUrl:   imageUrl,
+				Format:     format,
+			}
+		}(format, i)
 	}
+	wg.Wait()
 
 	return res, compressedFiles, errs
 }
@@ -235,9 +241,4 @@ func zipFiles(files []string, c *config.Config) (string, error) {
 	logger.Info("zipped files", "name", name, "time", nt)
 
 	return zipFile.Name(), nil
-}
-
-// SubImager handles creating a subimage from an image rect.
-type SubImager interface {
-	SubImage(r image.Rectangle) image.Image
 }

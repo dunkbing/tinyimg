@@ -2,13 +2,16 @@ package config
 
 import (
 	"fmt"
-	"optipic/converter/jpeg"
-	"optipic/converter/png"
-	"optipic/converter/webp"
+	"github.com/dunkbing/tinyimg/converter/jpeg"
+	"github.com/dunkbing/tinyimg/converter/png"
+	"github.com/dunkbing/tinyimg/converter/webp"
 	"os"
 	"path"
 	"path/filepath"
 )
+
+var AllowedOrigin = os.Getenv("ALLOWED_ORIGIN")
+var HostUrl = os.Getenv("HOST_URL")
 
 // App represents application persistent configuration values.
 type App struct {

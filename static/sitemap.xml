@@ -2,23 +2,18 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://tinyimg.db99.dev/</loc>
-    <lastmod>2024-02-18T13:58:59+00:00</lastmod>
+    <loc>https://tinyimg.cc/</loc>
+    <lastmod>2024-03-01T02:32:10+00:00</lastmod>
     <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://tinyimg.db99.dev/api</loc>
-    <lastmod>2024-02-18T13:58:59+00:00</lastmod>
+    <loc>https://tinyimg.cc/feedback</loc>
+    <lastmod>2024-03-01T02:32:10+00:00</lastmod>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://tinyimg.db99.dev/about</loc>
-    <lastmod>2024-02-18T13:58:59+00:00</lastmod>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://tinyimg.db99.dev/feedback</loc>
-    <lastmod>2024-02-18T13:58:59+00:00</lastmod>
+    <loc>https://tinyimg.cc/api</loc>
+    <lastmod>2024-03-01T02:32:10+00:00</lastmod>
     <priority>0.80</priority>
   </url>
 </urlset>

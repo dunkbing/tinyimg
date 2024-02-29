@@ -2,9 +2,9 @@ package image
 
 import (
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/config"
+	"github.com/dunkbing/tinyimg/converter/stat"
 	"log/slog"
-	"optipic/converter/config"
-	"optipic/converter/stat"
 	"runtime/debug"
 	"time"
 )

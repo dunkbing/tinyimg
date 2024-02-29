@@ -1,4 +1,4 @@
-module optipic
+module github.com/dunkbing/tinyimg
 
 go 1.21.5
 

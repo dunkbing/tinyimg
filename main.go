@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/config"
+	"github.com/dunkbing/tinyimg/converter/image"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
-	"optipic/converter/config"
-	"optipic/converter/image"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,12 +21,9 @@ type RequestBody struct {
 	Files []string `json:"files"`
 }
 
-var allowedOrigin = "*"
-
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Origin", config.AllowedOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -72,7 +69,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	ext = fmt.Sprintf(".%s", fileType)
 
 	c := config.GetConfig()
-	fmt.Println("in dir", c.App)
 	dest := filepath.Join(c.App.InDir, filename)
 	slog.Info("Upload", "dest", dest)
 	err = os.WriteFile(dest, data, 0644)
