@@ -2,6 +2,7 @@ package jpeg
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
@@ -40,12 +41,12 @@ func Encode(inputFile, outDir string) (string, error) {
 	if !isJpeg(inputFile) {
 		newInputFile := strings.Replace(inputFile, path.Ext(inputFile), ".jpg", 1)
 		convertCmd := exec.Command(
-			"convert", "-strip",
-			inputFile, newInputFile,
+			"vips", "copy",
+			inputFile, fmt.Sprintf("%s[Q=80]", newInputFile),
 		)
 		err := convertCmd.Run()
 		if err != nil {
-			slog.Error("convert error", "err", err)
+			slog.Error("convert to jpg error", "err", err)
 			return "", err
 		}
 		inputFile = newInputFile

@@ -69,17 +69,17 @@ func defaults() (*App, error) {
 		PngOpt:  &png.Options{Quality: 80},
 		WebpOpt: &webp.Options{Lossless: false, Quality: 80},
 	}
-	wd, err := os.Getwd()
+	wd, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Printf("failed to get user directory: %v", err)
 		return nil, err
 	}
 
-	od := path.Join(wd, "output")
+	od := path.Join(wd, "tinyimg", "output")
 	cp := filepath.Clean(od)
 
 	if _, err = os.Stat(od); os.IsNotExist(err) {
-		if err = os.Mkdir(od, 0777); err != nil {
+		if err = os.MkdirAll(od, 0777); err != nil {
 			od = "./"
 			fmt.Printf("failed to create default output directory: %v", err)
 			return nil, err
@@ -87,11 +87,11 @@ func defaults() (*App, error) {
 	}
 	a.OutDir = cp
 
-	id := path.Join(wd, "input")
+	id := path.Join(wd, "tinyimg", "input")
 	cip := filepath.Clean(id)
 
 	if _, err = os.Stat(id); os.IsNotExist(err) {
-		if err = os.Mkdir(id, 0777); err != nil {
+		if err = os.MkdirAll(id, 0777); err != nil {
 			id = "./"
 			fmt.Printf("failed to create default input directory: %v", err)
 			return nil, err

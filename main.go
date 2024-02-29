@@ -13,13 +13,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type RequestBody struct {
 	Files []string `json:"files"`
 }
 
-var allowedOrigin = os.Getenv("ALLOWED_ORIGIN")
+var allowedOrigin = "*"
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +66,13 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	ext := filepath.Ext(filename)
 	filename = strings.Replace(filename, ext, fmt.Sprintf(".%s", fileType), 1)
-	fmt.Println("ext", ext)
+	id := uuid.New()
+	filename = fmt.Sprintf("%s_%s", id.String(), filename)
+
 	ext = fmt.Sprintf(".%s", fileType)
 
 	c := config.GetConfig()
+	fmt.Println("in dir", c.App)
 	dest := filepath.Join(c.App.InDir, filename)
 	slog.Info("Upload", "dest", dest)
 	err = os.WriteFile(dest, data, 0644)
@@ -76,7 +81,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	took := time.Since(startTime).Seconds()
-	fmt.Println("Write to file took", took)
+	fmt.Println("Write to file took", took, "seconds")
 	formatStr := r.FormValue("formats")
 	formats := make([]string, 0)
 	if formatStr != "" {

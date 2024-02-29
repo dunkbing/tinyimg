@@ -2,6 +2,7 @@ package png
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/png"
 	"io"
@@ -43,12 +44,12 @@ func Encode(inputFile, outDir string) (string, error) {
 	if !isPng(inputFile) {
 		newInputFile := strings.Replace(inputFile, path.Ext(inputFile), ".png", 1)
 		convertCmd := exec.Command(
-			"convert", "-strip",
-			inputFile, newInputFile,
+			"vips", "copy",
+			inputFile, fmt.Sprintf("%s[strip]", newInputFile),
 		)
 		err := convertCmd.Run()
 		if err != nil {
-			slog.Error("convert error", "err", err)
+			slog.Error("convert to png error", "err", err)
 			return "", err
 		}
 		inputFile = newInputFile
@@ -64,7 +65,7 @@ func Encode(inputFile, outDir string) (string, error) {
 	)
 	err := cmd.Run()
 	if err != nil {
-		slog.Error("pngquant error", "err", err)
+		slog.Error("pngquant error", "err", err, "command", cmd.String())
 		return "", err
 	}
 
