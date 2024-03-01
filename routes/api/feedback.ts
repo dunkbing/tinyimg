@@ -1,8 +1,5 @@
-import { HandlerContext } from "$fresh/server.ts";
-import { TelegramBot } from "https://deno.land/x/telegram_bot_api@0.4.0/mod.ts";
-import config from "@/utils/config.ts";
-
-const bot = new TelegramBot(config.teleBotToken as string);
+import { FreshContext } from "$fresh/server.ts";
+import { sendMessage } from "@/utils/telegram.ts";
 
 type FeedbackData = {
   subject: string;
@@ -10,8 +7,7 @@ type FeedbackData = {
 };
 
 export const handler = {
-  async POST(req: Request, _ctx: HandlerContext): Promise<Response> {
-    console.log(config);
+  async POST(req: Request, _ctx: FreshContext): Promise<Response> {
     const { subject, message } = (await req.json()) as FeedbackData;
     const text = [
       "TinyIMG Feedback",
@@ -20,12 +16,7 @@ export const handler = {
       "---------------",
       message,
     ].join("\n");
-    void bot
-      .sendMessage({
-        chat_id: config.teleChatID as string,
-        text,
-      })
-      .catch((err) => console.error("Send tele message error:", err));
+    void sendMessage(text);
 
     return new Response(JSON.stringify({ message: "ok" }));
   },

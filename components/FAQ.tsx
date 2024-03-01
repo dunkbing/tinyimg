@@ -14,7 +14,7 @@ export function FAQ() {
         image compression technology.
       </h3>
       <hr class="w-48 h-1 mx-auto my-4 border-0 rounded md:my-2 bg-gray-700" />
-      <h1 class="text-black text-2xl font-semibold mb-4">FAQ</h1>
+      <h3 class="text-black text-2xl font-semibold">FAQ</h3>
       <div class="flex flex-col sm:px-8 lg:px-12 xl:px-32">
         <details>
           <summary class="py-2 outline-none cursor-pointer focus:underline text-center">

@@ -1,6 +1,6 @@
 import { JSX } from "preact";
 import { useState } from "preact/hooks";
-import IconPhoto from "tabler_icons_tsx/photo.tsx"
+import IconPhoto from "tabler_icons_tsx/photo.tsx";
 
 import FileItem from "@/islands/FileItem.tsx";
 import Converter, { Format } from "@/islands/Converter.tsx";
@@ -137,11 +137,11 @@ export default function Form(props: FormProps) {
       />
       {(!!files?.length &&
         (filesSig.value.length === files.length * (formats.length || 1))) && (
-          <Button colorMode="secondary" onClick={downloadAll}>
-            {downloadSig.value && <Loader />}
-            Download all
-          </Button>
-        )}
+        <Button colorMode="secondary" onClick={downloadAll}>
+          {downloadSig.value && <Loader />}
+          Download all
+        </Button>
+      )}
       {files && (
         [...files].map((file: File) => (
           <FileItem
