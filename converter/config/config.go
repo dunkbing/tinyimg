@@ -8,9 +8,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
-var AllowedOrigin = os.Getenv("ALLOWED_ORIGIN")
+var AllowedOrigins = strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
 var HostUrl = os.Getenv("HOST_URL")
 
 // App represents application persistent configuration values.

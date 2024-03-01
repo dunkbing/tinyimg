@@ -22,11 +22,16 @@ type RequestBody struct {
 }
 
 func enableCors(next http.Handler) http.Handler {
+	allowedOriginsMap := map[string]bool{}
+	for _, v := range config.AllowedOrigins {
+		allowedOriginsMap[v] = true
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", config.AllowedOrigin)
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		slog.Info("Request Headers: ", r.Header)
+		origin := r.Header.Get("Origin")
+		if allowedOriginsMap[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -160,7 +165,7 @@ func downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 func serveImgHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := r.URL.Query().Get("f")
 	if fileName == "" {
-		http.Error(w, "Please provide a valid filename", http.StatusBadRequest)
+		http.Error(w, "File not found", http.StatusBadRequest)
 		return
 	}
 
@@ -200,6 +205,8 @@ func getContentType(fileName string) string {
 		return "image/png"
 	case ".gif":
 		return "image/gif"
+	case ".webp":
+		return "image/webp"
 	default:
 		return "application/octet-stream"
 	}
