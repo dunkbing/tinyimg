@@ -1,6 +1,6 @@
 name: build-oci-image
 
-run-name: Build OCI Image for GoLang binary
+run-name: Build OCI Image
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
 
       # checkout
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # debug
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."

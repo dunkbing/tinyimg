@@ -1,4 +1,7 @@
 name: Deploy
+
+run-name: Deploy to Deno-Deploy
+
 on:
   push:
     branches: ['deploy/fe']
