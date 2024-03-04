@@ -46,7 +46,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sizeLimit int64 = 10 * 1024 * 1024 * 1024
+	var sizeLimit int64 = 10 * 1024 * 1024
 	r.Body = http.MaxBytesReader(w, r.Body, sizeLimit)
 
 	startTime := time.Now()
