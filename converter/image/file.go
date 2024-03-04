@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/cache"
 	"github.com/dunkbing/tinyimg/converter/config"
 	"github.com/dunkbing/tinyimg/converter/jpeg"
 	"github.com/dunkbing/tinyimg/converter/png"
@@ -43,6 +44,7 @@ type File struct {
 	InputFileDest string
 	Image         image.Image
 	Formats       []string
+	cache         *cache.Cache[string, CompressResult]
 }
 
 // Decode decodes the file's data based on its mime type.
@@ -93,7 +95,7 @@ func (f *File) GetSavings() (int64, error) {
 	return f.Size - c, nil
 }
 
-type FileResult struct {
+type CompressResult struct {
 	SavedBytes int64  `json:"savedBytes"`
 	NewSize    int64  `json:"newSize"`
 	Time       int64  `json:"time"`
@@ -102,26 +104,33 @@ type FileResult struct {
 }
 
 // Write saves a file to disk based on the encoding target.
-func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
+func (f *File) Write(c *config.Config) ([]CompressResult, []string, []error) {
 	var errs []error
 	t := time.Now()
 	compressedFiles := []string{}
 
 	formats := f.Formats
-	res := make([]FileResult, len(formats))
+	res := make([]CompressResult, len(formats))
 	var wg sync.WaitGroup
 	wg.Add(len(formats))
 	for i, format := range formats {
 		go func(format string, index int) {
 			defer wg.Done()
 			var savedBytes, newSize int64 // bytes
+			filename := strings.Split(f.Name, ".")[0]
+			filename = filename + "." + format
+
+			if cachedRes, ok := f.cache.Get(filename); ok {
+				res[index] = cachedRes
+				return
+			}
+
 			outputFile, err := encToBuf(f, format)
 			if err != nil {
 				errs = append(errs, err)
 				return
 			}
-			filename := strings.Split(f.Name, ".")[0]
-			filename = filename + "." + format
+
 			compressedFiles = append(compressedFiles, filename)
 			nt := time.Since(t).Milliseconds()
 
@@ -130,13 +139,14 @@ func (f *File) Write(c *config.Config) ([]FileResult, []string, []error) {
 			newSize, _ = f.GetConvertedSize()
 			imageUrl := fmt.Sprintf("%s/image?f=%s", config.HostUrl, filename)
 
-			res[index] = FileResult{
+			res[index] = CompressResult{
 				SavedBytes: savedBytes,
 				NewSize:    newSize,
 				Time:       nt,
 				ImageUrl:   imageUrl,
 				Format:     format,
 			}
+			f.cache.Set(filename, res[index])
 		}(format, i)
 	}
 	wg.Wait()

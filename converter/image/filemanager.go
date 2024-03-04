@@ -2,6 +2,7 @@ package image
 
 import (
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/cache"
 	"github.com/dunkbing/tinyimg/converter/config"
 	"github.com/dunkbing/tinyimg/converter/stat"
 	"log/slog"
@@ -17,6 +18,7 @@ type FileManager struct {
 
 	config *config.Config
 	stats  *stat.Stat
+	cache  *cache.Cache[string, CompressResult]
 }
 
 // NewFileManager creates a new FileManager.
@@ -27,6 +29,7 @@ func NewFileManager() *FileManager {
 		config: config.GetConfig(),
 		stats:  stat.NewStat(),
 		Logger: logger,
+		cache:  cache.NewCache[string, CompressResult](),
 	}
 }
 
@@ -36,6 +39,7 @@ func (fm *FileManager) HandleFile(file *File) (err error) {
 		return err
 	}
 	fm.File = file
+	fm.File.cache = fm.cache
 	fm.Logger.Info("added file to file manager", "filename", file.Name)
 
 	return nil
@@ -48,7 +52,7 @@ func (fm *FileManager) Clear() {
 }
 
 // Convert runs the conversion on all files in the FileManager.
-func (fm *FileManager) Convert() (fileResults []FileResult, files []string, errs []error) {
+func (fm *FileManager) Convert() (fileResults []CompressResult, files []string, errs []error) {
 	startTime := time.Now()
 	file := fm.File
 	fileResults, files, errs = file.Write(fm.config)

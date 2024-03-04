@@ -25,12 +25,13 @@ func enableCors(next http.Handler) http.Handler {
 
 func main() {
 	mux := http.NewServeMux()
+	handler := handlers.New()
 	mux.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprint(w, "pong")
 	}))
-	mux.HandleFunc("POST /upload", handlers.Upload)
-	mux.HandleFunc("POST /download-all", handlers.DownloadAll)
-	mux.HandleFunc("/image", handlers.ServeImg)
+	mux.HandleFunc("POST /upload", handler.Upload)
+	mux.HandleFunc("POST /download-all", handler.DownloadAll)
+	mux.HandleFunc("/image", handler.ServeImg)
 	fs := http.FileServer(http.Dir("./output"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 

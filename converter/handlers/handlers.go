@@ -39,7 +39,17 @@ func isImage(mimeType string) bool {
 	return strings.HasPrefix(mimeType, "image/")
 }
 
-func Upload(w http.ResponseWriter, r *http.Request) {
+type handler struct {
+	fileManager *image.FileManager
+}
+
+func New() *handler {
+	return &handler{
+		fileManager: image.NewFileManager(),
+	}
+}
+
+func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 	var sizeLimit int64 = 10 * 1024 * 1024
 	r.Body = http.MaxBytesReader(w, r.Body, sizeLimit)
 
@@ -102,13 +112,12 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		InputFileDest: dest,
 	}
 
-	fileManager := image.NewFileManager()
-	err = fileManager.HandleFile(&f)
+	err = h.fileManager.HandleFile(&f)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	results, files, errs := fileManager.Convert()
+	results, files, errs := h.fileManager.Convert()
 	strErrs := make([]string, len(errs))
 	for i, err := range errs {
 		strErrs[i] = err.Error()
@@ -124,7 +133,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func DownloadAll(w http.ResponseWriter, r *http.Request) {
+func (h *handler) DownloadAll(w http.ResponseWriter, r *http.Request) {
 	var body RequestBody
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -132,8 +141,7 @@ func DownloadAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fm := image.NewFileManager()
-	zippedPath, err := fm.ZipFiles(body.Files)
+	zippedPath, err := h.fileManager.ZipFiles(body.Files)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -155,7 +163,7 @@ func DownloadAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ServeImg(w http.ResponseWriter, r *http.Request) {
+func (h *handler) ServeImg(w http.ResponseWriter, r *http.Request) {
 	fileName := r.URL.Query().Get("f")
 	if fileName == "" {
 		http.Error(w, "File not found", http.StatusBadRequest)
