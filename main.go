@@ -1,11 +1,12 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/dunkbing/tinyimg/converter/config"
-	"github.com/dunkbing/tinyimg/converter/handlers"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/dunkbing/tinyimg/converter/config"
+	"github.com/dunkbing/tinyimg/converter/handlers"
 )
 
 func enableCors(next http.Handler) http.Handler {
@@ -24,16 +25,11 @@ func enableCors(next http.Handler) http.Handler {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// send hello message
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]any{
-			"message": "Hello",
-		})
+	mux.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = fmt.Fprint(w, "pong")
 	}))
-	mux.HandleFunc("/upload", handlers.Upload)
-	mux.HandleFunc("/download-all", handlers.DownloadAll)
+	mux.HandleFunc("POST /upload", handlers.Upload)
+	mux.HandleFunc("POST /download-all", handlers.DownloadAll)
 	mux.HandleFunc("/image", handlers.ServeImg)
 	fs := http.FileServer(http.Dir("./output"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))

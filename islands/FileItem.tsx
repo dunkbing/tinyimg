@@ -34,15 +34,13 @@ const updateStats = async (stats: {
   totalFiles: number;
   totalSize: number;
 }) => {
-  const res = await fetch("/api/stats", {
+  await fetch("/api/stats", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(stats),
   });
-  const { data } = await res.json();
-  return data;
 };
 
 const maxFileSize = 10 * 1024 * 1024;
@@ -109,20 +107,20 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
       }
     };
 
-    compressFile();
+    void compressFile();
   }, [file, formats, uploadUrl]);
 
   return (
     <div className="flex flex-col items-center px-4 my-2">
       <div className="flex flex-col lg:flex-row items-center justify-center bg-white p-4 md:p-2 rounded-lg shadow-md">
-        <div className="hidden lg:flex mr-1">
+        <div className="hidden lg:flex mx-1.5">
           <img
             src={URL.createObjectURL(file)}
             alt={file.name}
             className="w-24 h-24 object-cover rounded-lg"
           />
         </div>
-        <div className="flex flex-col space-y-0.5">
+        <div className="flex flex-col space-y-0.5 ml-1">
           <p className="text-sm font-semibold">
             {truncateString(file.name, 30)}
           </p>

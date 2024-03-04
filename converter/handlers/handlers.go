@@ -40,11 +40,6 @@ func isImage(mimeType string) bool {
 }
 
 func Upload(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var sizeLimit int64 = 10 * 1024 * 1024
 	r.Body = http.MaxBytesReader(w, r.Body, sizeLimit)
 
@@ -130,11 +125,6 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 }
 
 func DownloadAll(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var body RequestBody
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
