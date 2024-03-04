@@ -59,7 +59,7 @@ func Encode(inputFile, outDir string) (string, error) {
 
 	cmd := exec.Command(
 		"pngquant", "--quality=0-80",
-		"--speed=1", inputFile,
+		"--speed=4", inputFile,
 		"--output", outputFile,
 		"--force", "--strip",
 	)

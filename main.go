@@ -46,10 +46,13 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var sizeLimit int64 = 10 * 1024 * 1024 * 1024
+	r.Body = http.MaxBytesReader(w, r.Body, sizeLimit)
+
 	startTime := time.Now()
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusInternalServerError)
+		http.Error(w, "Error retrieving the file. The file may be too large (max 10MB)", http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
