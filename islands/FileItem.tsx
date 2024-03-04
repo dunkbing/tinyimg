@@ -45,6 +45,8 @@ const updateStats = async (stats: {
   return data;
 };
 
+const maxFileSize = 10 * 1024 * 1024;
+
 const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
   const imageType = file.type?.split("/")?.[1];
   const [state, setState] = useState<FileItemState[]>([]);
@@ -52,6 +54,10 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
 
   useEffect(() => {
     const compressFile = async () => {
+      if (file.size > maxFileSize) {
+        return;
+      }
+
       setCompressing(true);
       const formData = new FormData();
       formData.append("file", file);
@@ -125,6 +131,11 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
             <span className="mx-2">•</span>
             <p>{(file.size / 1024).toFixed(2)} KB</p>
           </div>
+          {file.size > maxFileSize && (
+            <span className="text-red-500">
+              The file is too large (max 10MB)
+            </span>
+          )}
           {compressing
             ? <Loader />
             : (
