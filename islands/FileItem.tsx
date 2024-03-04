@@ -107,20 +107,20 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
   }, [file, formats, uploadUrl]);
 
   return (
-    <div className="flex flex-col items-center bg-white p-3 rounded-lg shadow-md my-2">
-      <div className="flex flex-col lg:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="flex-shrink-0">
+    <div className="flex flex-col items-center px-4 my-2">
+      <div className="flex flex-col lg:flex-row items-center justify-center bg-white p-4 md:p-2 rounded-lg shadow-md">
+        <div className="hidden lg:flex mr-1">
           <img
             src={URL.createObjectURL(file)}
             alt={file.name}
-            className="w-32 h-32 object-cover rounded-lg"
+            className="w-24 h-24 object-cover rounded-lg"
           />
         </div>
-        <div className="flex flex-col space-y-1">
-          <p className="text-sm font-semibold line-clamp-1">
+        <div className="flex flex-col space-y-0.5">
+          <p className="text-sm font-semibold">
             {truncateString(file.name, 30)}
           </p>
-          <div className="flex flex-row text-gray-500">
+          <div className="flex flex-row text-gray-500 mb-0.5">
             <p>{imageType}</p>
             <span className="mx-2">•</span>
             <p>{(file.size / 1024).toFixed(2)} KB</p>
@@ -128,14 +128,10 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
           {compressing
             ? <Loader />
             : (
-              <div class="flex flex-col lg:flex-row items-center space-y-1 md:space-x-1">
-                <div className="flex flex-col py-2 text-sm hidden lg:block">
-                  <p className="text-gray-500">new size</p>
-                  <p className={`font-bold`}>saved</p>
-                </div>
+              <div class="flex flex-row flex-wrap items-center">
                 {state.map((s, index) => (
-                  <div class="flex flex-row" key={index}>
-                    <div className="flex flex-col items-center bg-blue-100 rounded-l-md py-2 text-sm ml-1 w-24">
+                  <div class="flex flex-row m-0.5" key={index}>
+                    <div className="flex flex-col items-center bg-blue-100 rounded-l-md py-2 text-sm w-20">
                       <p className="text-gray-500">
                         {((s.newSize || 0) / 1024).toFixed(2)} KB
                       </p>
