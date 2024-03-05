@@ -40,11 +40,14 @@ func isImage(mimeType string) bool {
 
 type handler struct {
 	fileManager *image.FileManager
+	config      *config.Config
 }
 
 func New() *handler {
+	c := config.GetConfig()
 	return &handler{
 		fileManager: image.NewFileManager(),
+		config:      c,
 	}
 }
 
@@ -71,7 +74,6 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid file format. Only images are allowed.", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("content type", mimeType, header.Filename)
 	fileType, _ := image.GetFileType(mimeType)
 	filename := filepath.Base(header.Filename)
 	filename = strings.ReplaceAll(filename, " ", "_")
@@ -81,8 +83,7 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	ext = fmt.Sprintf(".%s", fileType)
 
-	c := config.GetConfig()
-	dest := filepath.Join(c.App.InDir, filename)
+	dest := filepath.Join(h.config.App.InDir, filename)
 	slog.Info("Upload", "dest", dest)
 	err = os.WriteFile(dest, data, 0644)
 	if err != nil {
@@ -167,7 +168,7 @@ func (h *handler) ServeImg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath := filepath.Join("output", fileName)
+	filePath := filepath.Join(h.config.App.OutDir, fileName)
 
 	_, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
