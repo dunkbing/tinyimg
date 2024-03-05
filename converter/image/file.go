@@ -107,7 +107,7 @@ type CompressResult struct {
 func (f *File) Write(c *config.Config) ([]CompressResult, []string, []error) {
 	var errs []error
 	t := time.Now()
-	compressedFiles := []string{}
+	var compressedFiles []string
 
 	formats := f.Formats
 	res := make([]CompressResult, len(formats))
@@ -120,6 +120,7 @@ func (f *File) Write(c *config.Config) ([]CompressResult, []string, []error) {
 			filename := strings.Split(f.Name, ".")[0]
 			filename = filename + "." + format
 
+			compressedFiles = append(compressedFiles, filename)
 			if cachedRes, ok := f.cache.Get(filename); ok {
 				res[index] = cachedRes
 				return
@@ -131,7 +132,6 @@ func (f *File) Write(c *config.Config) ([]CompressResult, []string, []error) {
 				return
 			}
 
-			compressedFiles = append(compressedFiles, filename)
 			nt := time.Since(t).Milliseconds()
 
 			f.ConvertedFile = filepath.Clean(outputFile)
@@ -217,33 +217,40 @@ func zipFiles(files []string, c *config.Config) (string, error) {
 	defer zipWriter.Close()
 
 	for _, file := range files {
-		f, err := os.Open(path.Join(c.App.OutDir, file))
+		err := func(filename string) error {
+			f, err := os.Open(path.Join(c.App.OutDir, file))
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			info, err := f.Stat()
+			if err != nil {
+				return err
+			}
+
+			header, err := zip.FileInfoHeader(info)
+			if err != nil {
+				return err
+			}
+
+			header.Name = filepath.Base(file)
+			header.Method = zip.Deflate
+
+			writer, err := zipWriter.CreateHeader(header)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(writer, f)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(file)
+
 		if err != nil {
 			continue
-		}
-		defer f.Close()
-
-		info, err := f.Stat()
-		if err != nil {
-			continue
-		}
-
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			continue
-		}
-
-		header.Name = filepath.Base(file)
-		header.Method = zip.Deflate
-
-		writer, err := zipWriter.CreateHeader(header)
-		if err != nil {
-			continue
-		}
-
-		_, err = io.Copy(writer, f)
-		if err != nil {
-			return "", err
 		}
 	}
 

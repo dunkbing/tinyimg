@@ -140,7 +140,7 @@ const FileItem = ({ file, uploadUrl, formats, filesSig }: FileItemProps) => {
               <div class="flex flex-row flex-wrap items-center">
                 {state.map((s, index) => (
                   <div class="flex flex-row m-0.5" key={index}>
-                    <div className="flex flex-col items-center bg-blue-100 rounded-l-md py-2 text-sm w-20">
+                    <div className="flex flex-col items-center bg-blue-100 rounded-l-md py-2 text-sm w-24">
                       <p className="text-gray-500">
                         {((s.newSize || 0) / 1024).toFixed(2)} KB
                       </p>

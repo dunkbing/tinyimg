@@ -12,7 +12,7 @@ export function Button(
     <button
       {...props}
       disabled={!IS_BROWSER || props.disabled}
-      class={`flex items-center space-x-1 px-3 py-2 rounded-md border(gray-500 2) active:bg-gray-300 disabled:(opacity-50 cursor-not-allowed) text-white ${
+      class={`flex items-center space-x-1 px-3 py-2 rounded-md border-gray-500 border-2 active:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-white ${
         props.class ?? ""
       } ${
         colorMode === "primary"

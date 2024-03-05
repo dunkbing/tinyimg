@@ -135,13 +135,17 @@ export default function Form(props: FormProps) {
           setFormats(nf);
         }}
       />
-      {(!!files?.length &&
-        (filesSig.value.length === files.length * (formats.length || 1))) && (
-        <Button colorMode="secondary" onClick={downloadAll}>
-          {downloadSig.value && <Loader />}
-          Download all
-        </Button>
-      )}
+
+      <Button
+        colorMode="secondary"
+        onClick={downloadAll}
+        disabled={!(files?.length && filesSig.value.length ===
+            files.length * (formats.length || 1))}
+      >
+        {downloadSig.value && <Loader />}
+        Download all
+      </Button>
+
       {files && (
         [...files].map((file: File) => (
           <FileItem
