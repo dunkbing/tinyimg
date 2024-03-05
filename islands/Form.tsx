@@ -29,7 +29,7 @@ export default function Form(props: FormProps) {
       alert("You can only upload 20 files at a time");
       return;
     }
-    if (selectedFile) {
+    if (selectedFile?.length) {
       setFiles(selectedFile);
     }
   };
