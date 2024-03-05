@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/dunkbing/tinyimg/converter/config"
 	"github.com/dunkbing/tinyimg/converter/image"
-	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"net/http"
@@ -79,8 +78,6 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 
 	ext := filepath.Ext(filename)
 	filename = strings.Replace(filename, ext, fmt.Sprintf(".%s", fileType), 1)
-	id := uuid.New()
-	filename = fmt.Sprintf("%s_%s", id.String(), filename)
 
 	ext = fmt.Sprintf(".%s", fileType)
 

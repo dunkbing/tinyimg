@@ -38,3 +38,10 @@ func (c *Cache[K, V]) Delete(key K) {
 	defer c.mu.Unlock()
 	delete(c.data, key)
 }
+
+// Clear clears the cache.
+func (c *Cache[K, V]) Clear() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.data = make(map[K]V)
+}

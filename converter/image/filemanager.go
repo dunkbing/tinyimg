@@ -25,12 +25,27 @@ type FileManager struct {
 func NewFileManager() *FileManager {
 	logger := slog.Default()
 	logger.Info("FileManager initialized...")
-	return &FileManager{
+	cache_ := cache.NewCache[string, CompressResult]()
+
+	fm := &FileManager{
 		config: config.GetConfig(),
 		stats:  stat.NewStat(),
 		Logger: logger,
-		cache:  cache.NewCache[string, CompressResult](),
+		cache:  cache_,
 	}
+	fm.startCacheClearing()
+
+	return fm
+}
+
+func (fm *FileManager) startCacheClearing() {
+	go func() {
+		for {
+			fm.Logger.Info("Clearing cache...")
+			time.Sleep(5 * time.Minute)
+			fm.cache.Clear()
+		}
+	}()
 }
 
 // HandleFile processes a file from the client.
