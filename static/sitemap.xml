@@ -7,6 +7,11 @@
     <priority>1.00</priority>
   </url>
   <url>
+    <loc>https://tinyimg.cc/about</loc>
+    <lastmod>2024-03-06T02:32:10+00:00</lastmod>
+    <priority>0.90</priority>
+  </url>
+  <url>
     <loc>https://tinyimg.cc/feedback</loc>
     <lastmod>2024-03-01T02:32:10+00:00</lastmod>
     <priority>0.80</priority>
