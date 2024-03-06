@@ -138,9 +138,10 @@ export default function Form(props: FormProps) {
 
       <Button
         colorMode="secondary"
+        class="space-x-1"
         onClick={downloadAll}
         disabled={!(files?.length && filesSig.value.length ===
-            files.length * (formats.length || 1))}
+            files.length * (formats.length || 1)) || downloadSig.value}
       >
         {downloadSig.value && <Loader />}
         Download all
