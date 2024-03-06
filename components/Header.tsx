@@ -13,7 +13,7 @@ export default function Header(props: HeaderProps) {
 
   return (
     <header
-      class={`${SITE_BAR_STYLES} flex-col sm:flex-row`}
+      class={`${SITE_BAR_STYLES} my-2 flex-col sm:flex-row`}
     >
       <div class="flex justify-between items-center">
         <a href="/" class="shrink-0">
