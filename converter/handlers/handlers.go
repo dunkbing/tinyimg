@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dunkbing/tinyimg/converter/config"
 	"github.com/dunkbing/tinyimg/converter/image"
+	"github.com/dunkbing/tinyimg/converter/utils"
 	"io"
 	"log/slog"
 	"net/http"
@@ -36,6 +37,15 @@ func getContentType(fileName string) string {
 func isImage(mimeType string) bool {
 	mimeType = strings.ToLower(mimeType)
 	return strings.HasPrefix(mimeType, "image/")
+}
+
+// isFileUploaded checks if a file with the given name has already been uploaded.
+func isFileUploaded(filePath string) bool {
+	// Check if the file exists in the directory
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 type handler struct {
@@ -75,23 +85,26 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fileType, _ := image.GetFileType(mimeType)
-	filename := filepath.Base(header.Filename)
-	filename = strings.ReplaceAll(filename, " ", "_")
-
-	ext := filepath.Ext(filename)
-	filename = strings.Replace(filename, ext, fmt.Sprintf(".%s", fileType), 1)
-
-	ext = fmt.Sprintf(".%s", fileType)
+	filename, err := utils.GenerateHash(data)
+	if err != nil {
+		slog.Error("Error generating file name", "err", err.Error())
+		filename = filepath.Base(header.Filename)
+	}
+	ext := fmt.Sprintf(".%s", fileType)
+	filename = fmt.Sprintf("%s%s", filename, ext)
 
 	dest := filepath.Join(h.config.App.InDir, filename)
-	slog.Info("Upload", "dest", dest)
-	err = os.WriteFile(dest, data, 0644)
-	if err != nil {
-		http.Error(w, "Error writing the file", http.StatusInternalServerError)
-		return
+	if !isFileUploaded(dest) {
+		slog.Info("Upload", "dest", dest)
+		err = os.WriteFile(dest, data, 0644)
+		if err != nil {
+			http.Error(w, "Error writing the file", http.StatusInternalServerError)
+			return
+		}
 	}
 	took := time.Since(startTime).Seconds()
 	fmt.Println("Write to file took", took, "seconds")
+
 	formatStr := r.FormValue("formats")
 	formats := make([]string, 0)
 	if formatStr != "" {

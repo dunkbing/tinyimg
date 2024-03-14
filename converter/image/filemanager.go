@@ -42,7 +42,7 @@ func (fm *FileManager) startCacheClearing() {
 	go func() {
 		for {
 			fm.Logger.Info("Clearing cache...")
-			time.Sleep(5 * time.Minute)
+			time.Sleep(10 * time.Minute)
 			fm.cache.Clear()
 		}
 	}()
