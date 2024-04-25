@@ -230,6 +230,8 @@ func (h *handler) ServeVideo(w http.ResponseWriter, r *http.Request) {
 		contentType = "video/x-flv"
 	case ".webm":
 		contentType = "video/webm"
+	case ".zip":
+		contentType = "application/zip"
 	default:
 		http.Error(w, "Unsupported video format", http.StatusUnsupportedMediaType)
 		return

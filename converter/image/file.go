@@ -202,7 +202,7 @@ func generateUniqueZipFilename(files []string) string {
 func zipFiles(files []string, c *config.Config) (string, error) {
 	logger.Info("zipping files", "files", files)
 	t := time.Now()
-	baseFiles := []string{}
+	var baseFiles []string
 	for _, file := range files {
 		baseFiles = append(baseFiles, filepath.Base(file))
 	}
