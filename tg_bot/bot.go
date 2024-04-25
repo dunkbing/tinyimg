@@ -33,7 +33,7 @@ func (h *handler) Start() {
 	defer cancel()
 
 	opts := []bot.Option{
-		bot.WithDefaultHandler(h.defaultHandler),
+		bot.WithDefaultHandler(h.helpHandler),
 	}
 	botToken := config.TgBotToken
 
@@ -45,7 +45,7 @@ func (h *handler) Start() {
 		Commands: []models.BotCommand{
 			{
 				Command:     "start",
-				Description: "Say hello",
+				Description: "Help",
 			},
 			{
 				Command:     "download",
@@ -60,12 +60,7 @@ func (h *handler) Start() {
 		bot.HandlerTypeMessageText,
 		"/start",
 		bot.MatchTypeExact,
-		func(ctx context.Context, bot_ *bot.Bot, update *models.Update) {
-			bot_.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID: update.Message.Chat.ID,
-				Text:   "Please specify a video url",
-			})
-		},
+		h.helpHandler,
 	)
 	b.RegisterHandler(
 		bot.HandlerTypeMessageText,
@@ -77,7 +72,38 @@ func (h *handler) Start() {
 	b.Start(ctx)
 }
 
-func (h *handler) defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (h *handler) helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	help := `
+Welcome to the Video Downloader Bot!
+
+This bot allows you to download videos and playlists from various sources.
+
+📥 /video <url>
+Download a single video by providing the video URL.
+
+📥 /playlist <url>
+Download an entire playlist by providing the playlist URL.
+The bot will download all videos in the playlist.
+
+Example usage:
+/video https://example.com/video.mp4
+/playlist https://example.com/playlist
+
+Note: Video files will be sent as attachments in the chat.
+
+For any issues or feedback, please contact the bot owner.
+
+`
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   help,
+	})
+	if err != nil {
+		slog.Error("Error sending help message", "err", err)
+	}
+}
+
+func (h *handler) videoHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	url_ := update.Message.Text
 	if strings.HasPrefix(url_, "/download ") {
 		url_ = strings.Replace(url_, "/download ", "", 1)
