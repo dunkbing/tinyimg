@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/dunkbing/tinyimg/tg_bot"
 	"log"
 	"net/http"
 
@@ -24,6 +25,8 @@ func enableCors(next http.Handler) http.Handler {
 }
 
 func main() {
+	tgHandler := tg_bot.New()
+	go tgHandler.Start()
 	mux := http.NewServeMux()
 	handler := handlers.New()
 	mux.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +35,7 @@ func main() {
 	mux.HandleFunc("POST /upload", handler.Upload)
 	mux.HandleFunc("POST /download-all", handler.DownloadAll)
 	mux.HandleFunc("/image", handler.ServeImg)
+	mux.HandleFunc("/video", handler.ServeVideo)
 	fs := http.FileServer(http.Dir("./output"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-func GenerateHash(buf []byte) (string, error) {
+func GenerateHash(str string) (string, error) {
 	hash := sha256.New()
-	hash.Write(buf[:32*1024])
+	hash.Write([]byte(str))
 	hashBytes := hash.Sum(nil)
 	hashStr := fmt.Sprintf("%x", hashBytes)
 

@@ -1,5 +1,5 @@
 FROM golang:1.22-alpine
-RUN apk add --no-cache gcc musl-dev pngquant jpegoptim imagemagick libwebp-tools vips-tools
+RUN apk add --no-cache gcc musl-dev pngquant jpegoptim imagemagick libwebp-tools vips-tools yt-dlp
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download

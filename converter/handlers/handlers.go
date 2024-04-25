@@ -85,7 +85,7 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fileType, _ := image.GetFileType(mimeType)
-	filename, err := utils.GenerateHash(data)
+	filename, err := utils.GenerateHash(fmt.Sprintf("%s-%v", header.Filename, header.Size))
 	if err != nil {
 		slog.Error("Error generating file name", "err", err.Error())
 		filename = filepath.Base(header.Filename)
@@ -202,6 +202,51 @@ func (h *handler) ServeImg(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(w, file)
 	if err != nil {
 		http.Error(w, "Error serving file", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *handler) ServeVideo(w http.ResponseWriter, r *http.Request) {
+	fileName := r.URL.Query().Get("f")
+	if fileName == "" {
+		http.Error(w, "File not found", http.StatusBadRequest)
+		return
+	}
+
+	videoPath := filepath.Join(h.config.App.OutDir, fileName)
+	ext := strings.ToLower(filepath.Ext(videoPath))
+
+	var contentType string
+	switch ext {
+	case ".mp4":
+		contentType = "video/mp4"
+	case ".avi":
+		contentType = "video/x-msvideo"
+	case ".mov":
+		contentType = "video/quicktime"
+	case ".wmv":
+		contentType = "video/x-ms-wmv"
+	case ".flv":
+		contentType = "video/x-flv"
+	case ".webm":
+		contentType = "video/webm"
+	default:
+		http.Error(w, "Unsupported video format", http.StatusUnsupportedMediaType)
+		return
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "max-age=31536000") // Cache for 1 year
+
+	file, err := os.Open(videoPath)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		http.Error(w, "Error serving video", http.StatusInternalServerError)
 		return
 	}
 }

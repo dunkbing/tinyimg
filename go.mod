@@ -7,4 +7,7 @@ require (
 	github.com/foobaz/lossypng v0.0.0-20200814224715-48fa8819852a
 )
 
-require golang.org/x/time v0.5.0
+require (
+	github.com/go-telegram/bot v1.2.1
+	golang.org/x/time v0.5.0
+)
