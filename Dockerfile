@@ -10,6 +10,6 @@ COPY --from=base /app/yt-dlp /usr/local/bin
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
-RUN CGO_ENABLED=1 GOOS=linux go build -o tinyimg
+RUN CGO_ENABLED=1 GOOS=linux go build -o /usr/local/bin/tinyimg
 EXPOSE 8080
-ENTRYPOINT ["./tinyimg"]
+ENTRYPOINT ["tinyimg"]

@@ -115,7 +115,7 @@ func DownloadVideo(url, outDir string) (string, error) {
 	slog.Info("Downloading video", "url", url)
 	id := uuid.New().String()
 	outDest := filepath.Join(outDir, id)
-	output := outDest + "/%(playlist_index)s - %(title)s.%(ext)s"
+	output := outDest + "/%(title)s.%(ext)s"
 	args := []string{
 		"-o", output, "--quiet", url,
 	}

@@ -2,9 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/dunkbing/tinyimg/converter/jpeg"
-	"github.com/dunkbing/tinyimg/converter/png"
-	"github.com/dunkbing/tinyimg/converter/webp"
+	"github.com/dunkbing/tinyimg/tinyimg/jpeg"
+	"github.com/dunkbing/tinyimg/tinyimg/png"
+	"github.com/dunkbing/tinyimg/tinyimg/webp"
 	"os"
 	"path"
 	"path/filepath"

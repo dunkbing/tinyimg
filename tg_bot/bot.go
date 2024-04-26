@@ -3,9 +3,9 @@ package tg_bot
 import (
 	"context"
 	"fmt"
-	"github.com/dunkbing/tinyimg/converter/cache"
-	"github.com/dunkbing/tinyimg/converter/config"
-	"github.com/dunkbing/tinyimg/converter/utils"
+	"github.com/dunkbing/tinyimg/tinyimg/cache"
+	"github.com/dunkbing/tinyimg/tinyimg/config"
+	"github.com/dunkbing/tinyimg/tinyimg/utils"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/redis/go-redis/v9"
@@ -169,6 +169,7 @@ func (h *handler) helpHandler(ctx context.Context, b *bot.Bot, update *models.Up
 Welcome to the Video Downloader Bot!
 
 This bot allows you to download videos and playlists from various sources.
+Currently support Youtube, Tiktok, Facebook, and Pornhub
 
 📥 /video <url>
 Download a single video by providing the video URL.

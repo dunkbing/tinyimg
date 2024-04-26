@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dunkbing/tinyimg/converter/config"
-	"github.com/dunkbing/tinyimg/converter/handlers"
+	"github.com/dunkbing/tinyimg/tinyimg/config"
+	"github.com/dunkbing/tinyimg/tinyimg/handlers"
 )
 
 func enableCors(next http.Handler) http.Handler {

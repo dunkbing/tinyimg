@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/dunkbing/tinyimg/converter/config"
+	"github.com/dunkbing/tinyimg/tinyimg/config"
 	"github.com/redis/go-redis/v9"
 )
 
