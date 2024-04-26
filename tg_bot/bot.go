@@ -166,26 +166,23 @@ func (h *handler) processJob(b *bot.Bot, jobChan <-chan Job) {
 
 func (h *handler) helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	help := `
-Welcome to the Video Downloader Bot!
+🤖 Video Downloader Bot 🔽
 
-This bot allows you to download videos and playlists from various sources.
-Currently support Youtube, Tiktok, Facebook, and Pornhub
+📥 /video <url> - Download a single video
+📥 /playlist <url> - Download a playlist
 
-📥 /video <url>
-Download a single video by providing the video URL.
+Supported Sources:
+YouTube, TikTok, Facebook, Pornhub
 
-📥 /playlist <url>
-Download an entire playlist by providing the playlist URL.
-The bot will download all videos in the playlist.
-
-Example usage:
+Example:
 /video https://example.com/video.mp4
 /playlist https://example.com/playlist
 
-Note: Video files will be sent as attachments in the chat.
-
-For any issues or feedback, please contact the bot owner.
-
+💬 For support:
+TikTok: tiktok.com/@dunkbing
+Facebook: fb.com/dunkbinggg
+Instagram: instagram.com/dunkbingg
+X: x.com/dunkbingg
 `
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
