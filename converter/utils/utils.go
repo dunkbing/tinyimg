@@ -82,6 +82,27 @@ func ZipFolder(src, dest string) error {
 	})
 }
 
+func GetFirstFile(dirPath string) (string, error) {
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		return "", err
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdir(0)
+	if err != nil {
+		return "", err
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			return filepath.Join(dirPath, file.Name()), nil
+		}
+	}
+
+	return "", os.ErrNotExist
+}
+
 func DownloadVideo(url, outDir string) (string, error) {
 	// Create the new directory if it doesn't exist
 	if _, err := os.Stat(outDir); os.IsNotExist(err) {
@@ -92,25 +113,33 @@ func DownloadVideo(url, outDir string) (string, error) {
 	}
 
 	slog.Info("Downloading video", "url", url)
-	cmd := exec.Command("yt-dlp", "-o", "%(title)s.%(ext)s", "--quiet", url)
+	id := uuid.New().String()
+	outDest := filepath.Join(outDir, id)
+	output := outDest + "/%(playlist_index)s - %(title)s.%(ext)s"
+	args := []string{
+		"-o", output, "--quiet", url,
+	}
+	if strings.Contains(url, "tiktok") {
+		args = append([]string{"-f", "0"}, args...)
+	}
+	cmd := exec.Command("yt-dlp", args...)
 	err := cmd.Run()
 	if err != nil {
 		return "", fmt.Errorf("error executing yt-dlp: %w", err)
 	}
 
 	// get file name
-	cmd = exec.Command("yt-dlp", "-o", "%(title)s.%(ext)s", "--print", "filename", "--no-warnings", url)
-	stdOut, _ := cmd.CombinedOutput()
-	filename := string(stdOut)
-	filename = strings.Trim(filename, "\n")
-	ext := filepath.Ext(filename)
-	newFilename, err := GenerateHash(filename)
+	downloadedFilePath, err := GetFirstFile(outDest)
 	if err != nil {
-		return "", fmt.Errorf("error generating hash: %w", err)
+		slog.Error("Error getting downloaded file", "error", err)
+		return "", err
 	}
+	filename := filepath.Base(downloadedFilePath)
+	ext := filepath.Ext(filename)
+	newFilename := uuid.New().String()
 	newFilename = fmt.Sprintf("%s%s", newFilename, ext)
 	filepath_ := filepath.Join(outDir, newFilename)
-	err = os.Rename(filename, filepath_)
+	err = os.Rename(downloadedFilePath, filepath_)
 	if err != nil {
 		return "", err
 	}

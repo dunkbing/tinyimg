@@ -3,32 +3,41 @@ package tg_bot
 import (
 	"context"
 	"fmt"
+	"github.com/dunkbing/tinyimg/converter/cache"
 	"github.com/dunkbing/tinyimg/converter/config"
 	"github.com/dunkbing/tinyimg/converter/utils"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 )
 
 type handler struct {
 	config *config.Config
+	redis  *redis.Client
 }
 
 func New() *handler {
 	c := config.GetConfig()
+	r := cache.GetRedisClient()
 	return &handler{
 		config: c,
+		redis:  r,
 	}
 }
 
 const (
+	botName                = "tg_video_downloader"
 	videoCommand           = "video"
 	videoCommandPattern    = "/video"
 	playlistCommand        = "playlist"
 	playlistCommandPattern = "/playlist"
+	statsCommand           = "stats"
+	statsCommandPattern    = "/stats"
 )
 
 func (h *handler) Start() {
@@ -48,7 +57,7 @@ func (h *handler) Start() {
 	_, err = b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
 		Commands: []models.BotCommand{
 			{
-				Command:     "start",
+				Command:     "help",
 				Description: "Help",
 			},
 			{
@@ -59,6 +68,10 @@ func (h *handler) Start() {
 				Command:     playlistCommand,
 				Description: "Download a playlist with the url",
 			},
+			{
+				Command:     statsCommand,
+				Description: "Get bot's statistic",
+			},
 		},
 	})
 	if err != nil {
@@ -68,7 +81,7 @@ func (h *handler) Start() {
 	jobChan := make(chan Job, 100)
 	b.RegisterHandler(
 		bot.HandlerTypeMessageText,
-		"/start",
+		"/help",
 		bot.MatchTypeExact,
 		h.helpHandler,
 	)
@@ -84,8 +97,14 @@ func (h *handler) Start() {
 		bot.MatchTypePrefix,
 		h.downloadHandler(playlistCommand, jobChan),
 	)
+	b.RegisterHandler(
+		bot.HandlerTypeMessageText,
+		statsCommandPattern,
+		bot.MatchTypeExact,
+		h.statsHandler,
+	)
 
-	go h.worker(b, jobChan)
+	go h.processJob(b, jobChan)
 	b.Start(ctx)
 }
 
@@ -95,7 +114,7 @@ type Job struct {
 	command string
 }
 
-func (h *handler) worker(b *bot.Bot, jobChan <-chan Job) {
+func (h *handler) processJob(b *bot.Bot, jobChan <-chan Job) {
 	slog.Info("Start processing job")
 	for job := range jobChan {
 		slog.Info("Processing job", "chat_id", job.chatID, "command", job.command, "url", job.url)
@@ -125,6 +144,22 @@ func (h *handler) worker(b *bot.Bot, jobChan <-chan Job) {
 
 		if err != nil {
 			slog.Error("send message", slog.String("error", err.Error()))
+			continue
+		}
+
+		val, err := h.redis.Get(ctx, botName).Result()
+		if err != nil {
+			slog.Error("redis get", slog.String("error", err.Error()))
+		}
+		if val == "" {
+			h.redis.Set(ctx, botName, 1, 0)
+		} else {
+			vidDownloaded, err := strconv.Atoi(val)
+			if err != nil {
+				slog.Error("redis get", slog.String("error", err.Error()))
+			}
+			vidDownloaded += 1
+			h.redis.Set(ctx, botName, vidDownloaded, 0)
 		}
 	}
 }
@@ -202,4 +237,21 @@ or
 			command: command,
 		}
 	}
+}
+
+func (h *handler) statsHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	val, err := h.redis.Get(ctx, botName).Result()
+	if err != nil {
+		slog.Error("Stats get", slog.String("error", err.Error()))
+		_, _ = b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Something went wrong",
+		})
+		return
+	}
+
+	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   fmt.Sprintf("Total video downloaded: %s", val),
+	})
 }

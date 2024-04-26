@@ -14,6 +14,7 @@ import (
 var AllowedOrigins = strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
 var HostUrl = os.Getenv("HOST_URL")
 var TgBotToken = os.Getenv("TG_BOT_TOKEN")
+var RedisUrl = os.Getenv("REDIS_URL")
 
 // App represents application persistent configuration values.
 type App struct {
