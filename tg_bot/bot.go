@@ -165,6 +165,12 @@ func (h *handler) processJob(b *bot.Bot, jobChan <-chan Job) {
 }
 
 func (h *handler) helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update == nil {
+		return
+	}
+	if update.Message == nil {
+		return
+	}
 	help := `
 🤖 Video Downloader Bot 🔽
 
@@ -195,6 +201,13 @@ X: x.com/dunkbingg
 
 func (h *handler) downloadHandler(command string, jobChan chan Job) bot.HandlerFunc {
 	return func(ctx context.Context, b *bot.Bot, update *models.Update) {
+		if update == nil {
+			return
+		}
+		if update.Message == nil {
+			return
+		}
+
 		url_ := update.Message.Text
 		switch command {
 		case videoCommand:
@@ -238,6 +251,13 @@ or
 }
 
 func (h *handler) statsHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	if update == nil {
+		return
+	}
+	if update.Message == nil {
+		return
+	}
+
 	val, err := h.redis.Get(ctx, botName).Result()
 	if err != nil {
 		slog.Error("Stats get", slog.String("error", err.Error()))
