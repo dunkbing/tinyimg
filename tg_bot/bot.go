@@ -178,7 +178,7 @@ func (h *handler) helpHandler(ctx context.Context, b *bot.Bot, update *models.Up
 📥 /playlist <url> - Download a playlist
 
 Supported Sources:
-YouTube, TikTok, Facebook, Pornhub
+YouTube, TikTok, Facebook (public video + reel), Pornhub
 
 Example:
 /video https://example.com/video.mp4
