@@ -75,7 +75,7 @@ jobs:
 
       # build OCI image and push to registries (Docker Hub and Github Container Registry)
       - name: build and push docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
