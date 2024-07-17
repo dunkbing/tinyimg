@@ -35,7 +35,7 @@ export default function Header(props: HeaderProps) {
           About
         </a>
         <a
-          href="/feedback"
+          href="mailto:bing@db99.dev"
           className={NAV_ITEM}
         >
           Feedback

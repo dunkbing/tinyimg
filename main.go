@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/dunkbing/tinyimg/tg_bot"
 	"log"
 	"net/http"
 
@@ -25,8 +24,6 @@ func enableCors(next http.Handler) http.Handler {
 }
 
 func main() {
-	tgHandler := tg_bot.New()
-	go tgHandler.Start()
 	mux := http.NewServeMux()
 	handler := handlers.New()
 	mux.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
