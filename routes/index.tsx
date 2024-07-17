@@ -52,6 +52,28 @@ export default function Home(ctx: PageProps<unknown>) {
       <Form uploadUrl={uploadUrl} downloadUrl={downloadUrl} />
       <div class="mt-2" />
       <StatsView {...(data as any)} />
+      <script
+        async="async"
+        data-cfasync="false"
+        src="//pl23800802.highrevenuenetwork.com/b34656ab7bd71344b10632da979a042d/invoke.js"
+      />
+      <div id="container-b34656ab7bd71344b10632da979a042d" />
+      <script type="text/javascript">
+        {`
+          atOptions = {
+            'key' : '3c4db9bc14626c884e815abc2126dddb',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : { }
+          };
+        `}
+      </script>
+      <script
+        type="text/javascript"
+        src="//www.topcreativeformat.com/3c4db9bc14626c884e815abc2126dddb/invoke.js"
+      >
+      </script>
       <FAQ />
     </div>
   );
